@@ -27,7 +27,7 @@ implementation
 
 procedure TForm5.Edit1Change(Sender: TObject);
 begin
-  Edit3.Text := TLibPhoneNumber.Parse(Edit1.Text,Edit2.Text);
+  Edit3.Text := TLibPhoneNumber.Parse(Edit1.Text,Edit2.Text,false);
 end;
 
 end.
