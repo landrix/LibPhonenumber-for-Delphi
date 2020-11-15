@@ -17,7 +17,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    class function Parse(phonenumber : String; country : String) : String;
+    class function Parse(const phonenumber, country : String; E164notation : Boolean = true) : String;
   end;
 
 implementation
@@ -52,8 +52,8 @@ begin
   inherited;
 end;
 
-class function TLibPhoneNumber.Parse(phonenumber,
-  country: String): String;
+class function TLibPhoneNumber.Parse(const phonenumber,
+  country: String; E164notation : Boolean = true): String;
 var
   hstr : WideString;
   splitted: TArray<String>;
@@ -72,6 +72,12 @@ begin
 
   if Result = '' then
     exit;
+
+  if E164notation then
+  begin
+    Result := ReplaceText(Result,' ','');
+    exit;
+  end;
 
   splitted := Result.Split([' ']);
   if Length(splitted) < 2 then
