@@ -8,4 +8,5 @@ The original Apache License 2.0 was preserved.
 ## Example
 
 ```
+var parsedNumber : String := TLibPhoneNumber.Parse('01511234567','DE');
 ```
