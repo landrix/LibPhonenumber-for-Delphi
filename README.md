@@ -5,6 +5,8 @@ Current version is v8.12.11
 
 The original Apache License 2.0 was preserved.
 
+Support for Delphi 32 bit and 64 bit. Minimum requirement .NET Framework 4.5.2.
+
 ## Example
 
 ```
