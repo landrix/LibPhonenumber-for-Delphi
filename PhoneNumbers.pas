@@ -2,16 +2,16 @@ unit PhoneNumbers;
 
 interface
 
-uses System.Classes,System.sysutils,System.AnsiStrings
+uses System.Classes,System.SysUtils,System.StrUtils
      ,WinApi.Windows,Vcl.Dialogs,System.UITypes;
 
 type
   TLibPhoneNumber = class
   private type
-    TFormatTelNr = function (phonenumber : WideString; country : WideString; out formatetNumber : WideString) : Boolean; stdcall;
+    TParseFunction = function (phonenumber : WideString; country : WideString; out formatetNumber : WideString) : Boolean; stdcall;
   private
     dll : HMODULE;
-    FormatTelNrRef : TFormatTelNr;
+    parseFunction : TParseFunction;
   private const
     DLLNAME = 'PhoneNumbersUnmanaged.dll';
   public
@@ -30,7 +30,7 @@ var
 constructor TLibPhoneNumber.Create;
 begin
   dll := 0;
-  FormatTelNrRef := nil;
+  parseFunction := nil;
   if not FileExists(ExtractFilePath(ParamStr(0))+DLLNAME) then
   begin
     MessageDlg(Format('"%s" not found.',[DLLNAME])+#10+ExtractFilePath(ParamStr(0)), mtError, [mbOK], 0);
@@ -39,7 +39,7 @@ begin
   dll := LoadLibrary(PChar(ExtractFilePath(ParamStr(0))+DLLNAME));
   if dll <> 0 then
   begin
-    FormatTelNrRef := GetProcAddress(dll, 'FormatTelNr');
+    parseFunction := GetProcAddress(dll, 'Parse');
   end else
     MessageDlg(Format('error loading "%s".',[DLLNAME])+#10+ExtractFilePath(ParamStr(0)), mtError, [mbOK], 0);
 end;
@@ -62,12 +62,12 @@ begin
   Result := '';
   if instance = nil then
     instance := TLibPhoneNumber.Create;
-  if not Assigned(instance.FormatTelNrRef) then
+  if not Assigned(instance.parseFunction) then
   begin
     Result := phonenumber;
     exit;
   end;
-  if instance.FormatTelNrRef(PhoneNumber,country,hstr) then
+  if instance.parseFunction(PhoneNumber,country,hstr) then
     Result := hstr;
 
   if Result = '' then
