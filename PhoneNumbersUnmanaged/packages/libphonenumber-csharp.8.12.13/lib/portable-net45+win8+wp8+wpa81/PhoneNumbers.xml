@@ -1,0 +1,2006 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PhoneNumbers</name>
+    </assembly>
+    <members>
+        <member name="T:PhoneNumbers.AreaCodeMap">
+            <summary>
+            A utility that maps phone number prefixes to a string describing the geographical area the prefix
+            covers.
+            <!-- @author Shaopeng Jia -->
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.AreaCodeMap.GetSizeOfAreaCodeMapStorage(PhoneNumbers.AreaCodeMapStorageStrategy,System.Collections.Generic.SortedDictionary{System.Int32,System.String})">
+            Creates an empty {@link AreaCodeMap}. The default constructor is necessary for implementing
+            {@link Externalizable}. The empty map could later be populated by
+            {@link #readAreaCodeMap(java.util.SortedMap)} or {@link #readExternal(java.io.ObjectInput)}.
+            <summary>
+            Gets the size of the provided area code map storage. The map storage passed-in will be filled
+            as a result.
+            </summary>
+            <param name="mapStorage"></param>
+            <param name="areaCodeMap"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.AreaCodeMap.GetSmallerMapStorage(System.Collections.Generic.SortedDictionary{System.Int32,System.String})">
+            <summary>
+            Gets the smaller area code map storage strategy according to the provided area code map. It
+            actually uses (outputs the data to a stream) both strategies and retains the best one which
+            make this method quite expensive.
+            <!-- @VisibleForTesting -->
+            </summary>
+            <param name="areaCodeMap"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.AreaCodeMap.ReadAreaCodeMap(System.Collections.Generic.SortedDictionary{System.Int32,System.String})">
+            <summary>
+            Creates an <see cref="T:PhoneNumbers.AreaCodeMap"/> initialized with sortedAreaCodeMap.  Note that the
+            underlying implementation of this method is expensive thus should not be called by
+            time-critical applications.
+            </summary>
+            <param name="sortedAreaCodeMap">A map from phone number prefixes to descriptions of corresponding
+            geographical areas, sorted in ascending order of the phone number prefixes as integers.</param>
+        </member>
+        <member name="M:PhoneNumbers.AreaCodeMap.Lookup(PhoneNumbers.PhoneNumber)">
+            <summary>
+            Returns the description of the geographical area the number corresponds to. This method
+            distinguishes the case of an invalid prefix and a prefix for which the name is not available in
+            the current language. If the description is not available in the current language an empty
+            string is returned. If no description was found for the provided number, null is returned.
+            </summary>
+            <param name="number">The phone number to look up.</param>
+            <returns>The description of the geographical area.</returns>
+        </member>
+        <member name="M:PhoneNumbers.AreaCodeMap.BinarySearch(System.Int32,System.Int32,System.Int64)">
+            <summary>
+            Does a binary search for value in the provided array from start to end
+            (inclusive). Returns the position if value is found; otherwise, returns the
+            position which has the largest value that is less than value. This means if
+            value is the smallest, -1 will be returned.
+            </summary>
+            <param name="start"></param>
+            <param name="end"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.AreaCodeMap.ToString">
+            <summary>
+            Dumps the mappings contained in the area code map.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:PhoneNumbers.AreaCodeMapStorageStrategy">
+            <summary>
+            Abstracts the way area code data is stored into memory and serialized to a stream. It is used by
+            <see cref="T:PhoneNumbers.AreaCodeMap"/> to support the most space-efficient storage strategy according to the
+            provided data.
+            <!-- @author Philippe Liard -->
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.AreaCodeMapStorageStrategy.GetPrefix(System.Int32)">
+            <summary>
+            Gets the phone number prefix located at the provided index.
+            </summary>
+            <param name="index">The index of the prefix that needs to be returned.</param>
+            <returns>The phone number prefix at the provided index.</returns>
+        </member>
+        <member name="M:PhoneNumbers.AreaCodeMapStorageStrategy.GetDescription(System.Int32)">
+            <summary>
+            Gets the description corresponding to the phone number prefix located at the provided
+            index. If the description is not available in the current language an empty string is
+            returned.
+            </summary>
+            <param name="index">The index of the phone number prefix that needs to be returned.</param>
+            <returns>The description corresponding to the phone number prefix at the provided index.</returns>
+        </member>
+        <member name="M:PhoneNumbers.AreaCodeMapStorageStrategy.ReadFromSortedMap(System.Collections.Generic.SortedDictionary{System.Int32,System.String})">
+            <summary>
+            Sets the internal state of the underlying storage implementation from the provided
+            sortedAreaCodeMap that maps phone number prefixes to description strings.
+            </summary>
+            <param name="sortedAreaCodeMap">A sorted map that maps phone number prefixes including country
+            calling code to description strings.</param>
+        </member>
+        <member name="M:PhoneNumbers.AreaCodeMapStorageStrategy.GetNumOfEntries">
+            <summary>
+            The number of entries contained in the area code map.
+            </summary>
+            <returns>The number of entries contained in the area code map.</returns>
+        </member>
+        <member name="M:PhoneNumbers.AreaCodeMapStorageStrategy.GetPossibleLengths">
+            <summary>
+            The set containing the possible lengths of prefixes.
+            </summary>
+            <returns>The set containing the possible lengths of prefixes.</returns>
+        </member>
+        <member name="T:PhoneNumbers.AreaCodeParser">
+            <summary>
+            <para>
+            A utility that generates the binary serialization of the area code/location mappings from
+            human-readable text files. It also generates a configuration file which contains information on
+            data files available for use.
+            </para>
+            <para>
+            The text files must be located in sub-directories of the provided input path. For each input
+            file inputPath/lang/countryCallingCode.txt the corresponding binary file is generated as
+            outputPath/countryCallingCode_lang.
+            </para>
+            <!-- @author Philippe Liard -->
+            </summary>
+        </member>
+        <member name="T:PhoneNumbers.AsYouTypeFormatter">
+            <summary>
+            A formatter which formats phone numbers as they are entered.
+            <para>
+            An AsYouTypeFormatter can be created by invoking
+            <see cref="M:PhoneNumbers.PhoneNumberUtil.GetAsYouTypeFormatter(System.String)"/>. After that, digits can be added by invoking
+            <see cref="M:PhoneNumbers.AsYouTypeFormatter.InputDigit(System.Char)"/> on the formatter instance, and the partially formatted phone number will be
+            returned each time a digit is added. {@link #clear} can be invoked before formatting a new
+            number.
+            </para>
+            See the unittests for more details on how the formatter is to be used.
+            <!-- @author Shaopeng Jia -->
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.AsYouTypeFormatter.#ctor(System.String,PhoneNumbers.PhoneNumberUtil)">
+            <summary>
+            Constructs an as-you-type formatter. Should be obtained from
+            <see cref="M:PhoneNumbers.PhoneNumberUtil.GetAsYouTypeFormatter(System.String)"/>.
+            </summary>
+            <param name="regionCode">The country/region where the phone number is being entered.</param>
+            <param name="phoneUtil"></param>
+        </member>
+        <member name="M:PhoneNumbers.AsYouTypeFormatter.Clear">
+            <summary>
+            Clears the internal state of the formatter, so it can be reused.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.AsYouTypeFormatter.InputDigit(System.Char)">
+            <summary>
+            Formats a phone number on-the-fly as each digit is entered.
+            </summary>
+            <param name="nextChar">The most recently entered digit of a phone number. Formatting characters are
+            allowed, but as soon as they are encountered this method formats the number as entered and
+            not "as you type" anymore. Full width digits and Arabic-indic digits are allowed, and will
+            be shown as they are.</param>
+            <returns>The partially formatted phone number.</returns>
+        </member>
+        <member name="M:PhoneNumbers.AsYouTypeFormatter.InputDigitAndRememberPosition(System.Char)">
+            <summary>
+            Same as <see cref="M:PhoneNumbers.AsYouTypeFormatter.InputDigit(System.Char)"/>, but remembers the position where nextChar is inserted, so
+            that it can be retrieved later by using <see cref="M:PhoneNumbers.AsYouTypeFormatter.GetRememberedPosition"/>. The remembered
+            position will be automatically adjusted if additional formatting characters are later
+            inserted/removed in front of nextChar.
+            </summary>
+            <param name="nextChar"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.AsYouTypeFormatter.AttemptToFormatAccruedDigits">
+             <summary>
+             Checks to see if there is an exact pattern match for these digits. If so, we should use this
+            instead of any other formatting template whose leadingDigitsPattern also matches the input.
+             </summary>
+        </member>
+        <member name="M:PhoneNumbers.AsYouTypeFormatter.GetRememberedPosition">
+            <summary>
+            Returns the current position in the partially formatted phone number of the character which was
+            previously passed in as the parameter of {@link #inputDigitAndRememberPosition}.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.AsYouTypeFormatter.AppendNationalNumber(System.String)">
+            <summary>
+            Combines the national number with any prefix (IDD/+ and country code or national prefix) that
+            was collected. A space will be inserted between them if the current formatting template
+            indicates this to be suitable.
+            </summary>
+            <param name="nationalNumberStr"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.AsYouTypeFormatter.IsNanpaNumberWithNationalPrefix">
+            <summary>
+            Returns true if the current country is a NANPA country and the national number begins with
+            the national prefix.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.AsYouTypeFormatter.AttemptToExtractIdd">
+            <summary>
+            Extracts IDD and plus sign to prefixBeforeNationalNumber when they are available, and places
+            the remaining input into nationalNumber.
+            </summary>
+            <returns>True when accruedInputWithoutFormatting begins with the plus sign or valid IDD for
+            defaultCountry.</returns>
+        </member>
+        <member name="M:PhoneNumbers.AsYouTypeFormatter.AttemptToExtractCountryCallingCode">
+            <summary>
+            Extracts the country calling code from the beginning of nationalNumber to
+            prefixBeforeNationalNumber when they are available, and places the remaining input into
+            nationalNumber.
+            </summary>
+            <returns>True when a valid country calling code can be found.</returns>
+        </member>
+        <member name="M:PhoneNumbers.BuildMetadataFromXml.GetNationalPrefix(System.Xml.Linq.XElement)">
+            Returns the national prefix of the provided country element.
+        </member>
+        <member name="M:PhoneNumbers.BuildMetadataFromXml.LoadInternationalFormat(PhoneNumbers.PhoneMetadata.Builder,System.Xml.Linq.XElement,System.String)">
+             Extracts the pattern for international format. If there is no intlFormat, default to using the
+             national format. If the intlFormat is set to "NA" the intlFormat should be ignored.
+            
+             @throws  RuntimeException if multiple intlFormats have been encountered.
+             @return  whether an international number format is defined.
+        </member>
+        <member name="M:PhoneNumbers.BuildMetadataFromXml.LoadNationalFormat(PhoneNumbers.PhoneMetadata.Builder,System.Xml.Linq.XElement,PhoneNumbers.NumberFormat.Builder)">
+             Extracts the pattern for the national format.
+            
+             @throws  RuntimeException if multiple or no formats have been encountered.
+             @return  the national format string.
+        </member>
+        <member name="M:PhoneNumbers.BuildMetadataFromXml.LoadAvailableFormats(PhoneNumbers.PhoneMetadata.Builder,System.Xml.Linq.XElement,System.String,System.String,System.Boolean)">
+            Extracts the available formats from the provided DOM element. If it does not contain any
+            nationalPrefixFormattingRule, the one passed-in is retained. The nationalPrefix,
+            nationalPrefixFormattingRule and nationalPrefixOptionalWhenFormatting values are provided from
+            the parent (territory) element.
+        </member>
+        <member name="M:PhoneNumbers.BuildMetadataFromXml.ArePossibleLengthsEqual(System.Collections.Generic.SortedSet{System.Int32},PhoneNumbers.PhoneNumberDesc)">
+            Checks if the possible lengths provided as a sorted set are equal to the possible lengths
+            stored already in the description pattern. Note that possibleLengths may be empty but must not
+            be null, and the PhoneNumberDesc passed in should also not be null.
+        </member>
+        <member name="M:PhoneNumbers.BuildMetadataFromXml.ProcessPhoneNumberDescElement(PhoneNumbers.PhoneNumberDesc,System.Xml.Linq.XElement,System.String)">
+             Processes a phone number description element from the XML file and returns it as a
+             PhoneNumberDesc. If the description element is a fixed line or mobile number, the parent
+             description will be used to fill in the whole element if necessary, or any components that are
+             missing. For all other types, the parent description will only be used to fill in missing
+             components if the type has a partial definition. For example, if no "tollFree" element exists,
+             we assume there are no toll free numbers for that locale, and return a phone number description
+             with no national number data and [-1] for the possible lengths. Note that the parent
+             description must therefore already be processed before this method is called on any child
+             elements.
+            
+             @param generalDesc  a generic phone number description that will be used to fill in missing
+                                 parts of the description
+             @param countryElement  the XML element representing all the country information
+             @param numberType  the name of the number type, corresponding to the appropriate tag in the XML
+                                file with information about that type
+             @return  complete description of that phone number type
+        </member>
+        <member name="M:PhoneNumbers.BuildMetadataFromXml.PopulatePossibleLengthSets(System.Collections.Generic.IEnumerable{System.Xml.Linq.XElement},System.Collections.Generic.SortedSet{System.Int32},System.Collections.Generic.SortedSet{System.Int32})">
+             Reads the possible lengths present in the metadata and splits them into two sets: one for
+             full-length numbers, one for local numbers.
+            
+             @param data  one or more phone number descriptions, represented as XML nodes
+             @param lengths  a set to which to add possible lengths of full phone numbers
+             @param localOnlyLengths  a set to which to add possible lengths of phone numbers only diallable
+                 locally (e.g. within a province)
+        </member>
+        <member name="M:PhoneNumbers.BuildMetadataFromXml.SetPossibleLengthsGeneralDesc(PhoneNumbers.PhoneNumberDesc.Builder,System.String,System.Xml.Linq.XElement,System.Boolean)">
+            Sets possible lengths in the general description, derived from certain child elements.
+        </member>
+        <member name="M:PhoneNumbers.BuildMetadataFromXml.SetPossibleLengths(System.Collections.Generic.SortedSet{System.Int32},System.Collections.Generic.SortedSet{System.Int32},PhoneNumbers.PhoneNumberDesc,PhoneNumbers.PhoneNumberDesc.Builder)">
+             Sets the possible length fields in the metadata from the sets of data passed in. Checks that
+             the length is covered by the "parent" phone number description element if one is present, and
+             if the lengths are exactly the same as this, they are not filled in for efficiency reasons.
+            
+             @param parentDesc  the "general description" element or null if desc is the generalDesc itself
+             @param desc  the PhoneNumberDesc object that we are going to set lengths for
+        </member>
+        <member name="M:PhoneNumbers.BuildMetadataFromXml.GetMetadataFilter(System.Boolean,System.Boolean)">
+                     * Processes the custom build flags and gets a {@code MetadataFilter} which may be used to
+                    * filter {@code PhoneMetadata} objects. Incompatible flag combinations throw RuntimeException.
+                    *
+                    * @param liteBuild  The liteBuild flag value as given by the command-line
+                    * @param specialBuild  The specialBuild flag value as given by the command-line
+        </member>
+        <member name="T:PhoneNumbers.DefaultMapStorage">
+             Default area code map storage strategy that is used for data not containing description
+             duplications. It is mainly intended to avoid the overhead of the string table management when it
+             is actually unnecessary (i.e no string duplication).
+            
+             @author Shaopeng Jia
+        </member>
+        <member name="T:PhoneNumbers.FlyweightMapStorage">
+             Flyweight area code map storage strategy that uses a table to store unique strings and shorts to
+             store the prefix and description indexes when possible. It is particularly space-efficient when
+             the provided area code map contains a lot of description redundant descriptions.
+            
+             @author Philippe Liard
+        </member>
+        <member name="M:PhoneNumbers.FlyweightMapStorage.GetDescription(System.Int32)">
+            This implementation returns the same string (same identity) when called for multiple indexes
+            corresponding to prefixes that have the same description.
+        </member>
+        <member name="M:PhoneNumbers.FlyweightMapStorage.CreateDescriptionPool(System.Collections.Generic.HashSet{System.String},System.Collections.Generic.SortedDictionary{System.Int32,System.String})">
+            Creates the description pool from the provided set of string descriptions and area code map.
+        </member>
+        <member name="M:PhoneNumbers.FlyweightMapStorage.GetOptimalNumberOfBytesForValue(System.Int32)">
+            Gets the minimum number of bytes that can be used to store the provided {@code value}.
+        </member>
+        <member name="M:PhoneNumbers.FlyweightMapStorage.StoreWordInBuffer(PhoneNumbers.FlyweightMapStorage.ByteBuffer,System.Int32,System.Int32,System.Int32)">
+             Stores the provided {@code value} to the provided byte {@code buffer} at the specified {@code
+             index} using the provided {@code wordSize} in bytes. Note that only integer and short sizes are
+             supported.
+            
+             @param buffer  the byte buffer to which the value is stored
+             @param wordSize  the number of bytes used to store the provided value
+             @param index  the index to which the value is stored
+             @param value  the value that is stored assuming it does not require more than the specified
+                number of bytes.
+        </member>
+        <member name="M:PhoneNumbers.FlyweightMapStorage.ReadWordFromBuffer(PhoneNumbers.FlyweightMapStorage.ByteBuffer,System.Int32,System.Int32)">
+             Reads the {@code value} at the specified {@code index} from the provided byte {@code buffer}.
+             Note that only integer and short sizes are supported.
+            
+             @param buffer  the byte buffer from which the value is read
+             @param wordSize  the number of bytes used to store the value
+             @param index  the index where the value is read from
+            
+             @return  the value read from the buffer
+        </member>
+        <member name="T:PhoneNumbers.InternalRegexOptions">
+            <summary>
+            This utility class determines the correct set of <see cref="T:System.Text.RegularExpressions.RegexOptions"/> to specify when creating
+            <see cref="T:System.Text.RegularExpressions.Regex"/> instances at runtime within this library.
+            </summary>
+            <threadsafety static="true" instance="false"/>
+        </member>
+        <member name="T:PhoneNumbers.Internal.IMatcherApi">
+            <summary>
+            Internal phonenumber matching API used to isolate the underlying implementation of the
+            matcher and allow different implementations to be swapped in easily.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.Internal.IMatcherApi.MatchNationalNumber(System.String,PhoneNumbers.PhoneNumberDesc,System.Boolean)">
+            <summary>
+            Returns whether the given national number (a string containing only decimal digits) matches
+            the national number pattern defined in the given {@code PhoneNumberDesc} message.
+            </summary>
+            <param name="number"></param>
+            <param name="numberDesc"></param>
+            <param name="allowPrefixMatch"></param>
+            <returns></returns>
+        </member>
+        <member name="T:PhoneNumbers.MappingFileProvider">
+             A utility which knows the data files that are available for the geocoder to use. The data files
+             contain mappings from phone number prefixes to text descriptions, and are organized by country
+             calling code and language that the text descriptions are in.
+            
+             @author Shaopeng Jia
+        </member>
+        <member name="M:PhoneNumbers.MappingFileProvider.ReadFileConfigs(System.Collections.Generic.SortedDictionary{System.Int32,System.Collections.Generic.HashSet{System.String}})">
+            Creates an empty {@link MappingFileProvider}. The default constructor is necessary for
+            implementing {@link Externalizable}. The empty provider could later be populated by
+            {@link #readFileConfigs(java.util.SortedMap)} or {@link #readExternal(java.io.ObjectInput)}.
+             Initializes an {@link MappingFileProvider} with {@code availableDataFiles}.
+            
+             @param availableDataFiles  a map from country calling codes to sets of languages in which data
+                 files are available for the specific country calling code. The map is sorted in ascending
+                 order of the country calling codes as integers.
+        </member>
+        <member name="M:PhoneNumbers.MappingFileProvider.ToString">
+            Returns a string representing the data in this class. The string contains one line for each
+            country calling code. The country calling code is followed by a '|' and then a list of
+            comma-separated languages sorted in ascending order.
+        </member>
+        <member name="M:PhoneNumbers.MappingFileProvider.GetFileName(System.Int32,System.String,System.String,System.String)">
+             Gets the name of the file that contains the mapping data for the {@code countryCallingCode} in
+             the language specified.
+            
+             @param countryCallingCode  the country calling code of phone numbers which the data file
+                 contains
+             @param language  two-letter lowercase ISO language codes as defined by ISO 639-1
+             @param script  four-letter titlecase (the first letter is uppercase and the rest of the letters
+                 are lowercase) ISO script codes as defined in ISO 15924
+             @param region  two-letter uppercase ISO country codes as defined by ISO 3166-1
+             @return  the name of the file, or empty string if no such file can be found
+        </member>
+        <member name="T:PhoneNumbers.MetadataFilter">
+             Class to encapsulate the metadata filtering logic and restrict visibility into raw data
+             structures.
+            
+             <p />
+             WARNING: This is an internal API which is under development and subject to backwards-incompatible
+             changes without notice. Any changes are not guaranteed to be reflected in the versioning scheme
+             of the public API, nor in release notes.
+        </member>
+        <member name="M:PhoneNumbers.MetadataFilter.FilterMetadata(PhoneNumbers.PhoneMetadata.Builder)">
+             Clears certain fields in {@code metadata} as defined by the {@code MetadataFilter} instance.
+             Note that this changes the mutable {@code metadata} object, and is not thread-safe. If this
+             method does not return successfully, do not assume {@code metadata} has not changed.
+            
+             @param metadata  The {@code PhoneMetadata} object to be filtered
+        </member>
+        <member name="M:PhoneNumbers.MetadataFilter.ParseFieldMapFromString(System.String)">
+            The input blacklist or whitelist string is expected to be of the form "a(b,c):d(e):f", where
+            b and c are children of a, e is a child of d, and f is either a parent field, a child field, or
+            a childless field. Order and whitespace don't matter. We throw Exception for any
+            duplicates, malformed strings, or strings where field tokens do not correspond to strings in
+            the sets of excludable fields. We also throw Exception for empty strings since such
+            strings should be treated as a special case by the flag checking code and not passed here.
+        </member>
+        <member name="T:PhoneNumbers.MetadataManager">
+             Class encapsulating loading of PhoneNumber Metadata information. Currently this is used only for
+             additional data files such as PhoneNumberAlternateFormats, but in the future it is envisaged it
+             would handle the main metadata file (PhoneNumberMetaData.xml) as well.
+            
+             @author Lara Rennie
+        </member>
+        <member name="T:PhoneNumbers.PhoneNumberFormat">
+             INTERNATIONAL and NATIONAL formats are consistent with the definition in ITU-T Recommendation
+             E123. For example, the number of the Google Switzerland office will be written as
+             "+41 44 668 1800" in INTERNATIONAL format, and as "044 668 1800" in NATIONAL format.
+             E164 format is as per INTERNATIONAL format but with no formatting applied, e.g.
+             "+41446681800". RFC3966 is as per INTERNATIONAL format, but with all spaces and other
+             separating symbols replaced with a hyphen, and with any phone number extension appended with
+             ";ext=". It also will have a prefix of "tel:" added, e.g. "tel:+41-44-668-1800".
+            
+             Note: If you are considering storing the number in a neutral format, you are highly advised to
+             use the PhoneNumber class.
+        </member>
+        <member name="T:PhoneNumbers.PhoneNumberMatcher">
+            <summary>
+            The phone number pattern used by {@link #find}, similar to
+            <c> PhoneNumberUtil.VALID_PHONE_NUMBER</c>, but with the following differences:
+            <ul>
+              <li>All captures are limited in order to place an upper bound to the text matched by the pattern. </li>
+            </ul>
+            <ul>
+              <li>Leading punctuation / plus signs are limited. </li>
+              <li>Consecutive occurrences of punctuation are limited. </li>
+              <li>Number of digits is limited. </li>
+            </ul>
+            <ul>
+              <li>No whitespace is allowed at the start or end. </li>
+              <li>No alpha digits (vanity numbers such as 1-800-SIX-FLAGS) are currently supported. </li>
+            </ul>
+            </summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberMatcher.PubPages">
+             <summary>
+             Matches strings that look like publication pages. Example:
+             <pre>Computing Complete Answers to Queries in the Presence of Limited Access Patterns.
+             Chen Li. VLDB J. 12(3): 211-227 (2003).</pre>
+            
+             The string "211-227 (2003)" is not a telephone number.
+             </summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberMatcher.SlashSeparatedDates">
+            <summary>
+            Matches strings that look like dates using "/" as a separator. Examples: 3/10/2011, 31/10/96 or
+            08/31/95.
+            </summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberMatcher.TimeStamps">
+            <summary>
+            Matches timestamps. Examples: "2012-01-02 08:00". Note that the reg-ex does not include the
+            trailing ":\d\d" -- that is covered by TIME_STAMPS_SUFFIX.
+            </summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberMatcher.MatchingBrackets">
+            <summary>
+            Pattern to check that brackets match. Opening brackets should be closed within a phone number.
+            This also checks that there is something inside the brackets. Having no brackets at all is also fine.
+            </summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberMatcher.LeadClass">
+            <summary>
+            Punctuation that may be at the start of a phone number - brackets and plus signs.
+            </summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberMatcher.GroupSeparator">
+            <summary>
+            Matches white-space, which may indicate the end of a phone number and the start of something
+            else (such as a neighbouring zip-code). If white-space is found, continues to match all
+            characters that are not typically used to start a phone number.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberMatcher.#cctor">
+            <summary>
+             Builds the MATCHING_BRACKETS and PATTERN regular expressions. The building blocks below exist
+             to make the pattern more easily understood.
+             </summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberMatcher.Limit(System.Int32,System.Int32)">
+            Returns a regular expression quantifier with an upper and lower limit. 
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberMatcher.phoneUtil">
+            <summary>The phone number utility.</summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberMatcher.text">
+            <summary>The text searched for phone numbers.</summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberMatcher.preferredRegion">
+            <summary>The region (country) to assume for phone numbers without an international prefix, possibly null.</summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberMatcher.leniency">
+            <summary>The degree of validation requested.</summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberMatcher.maxTries">
+            <summary>The maximum number of retries after matching an invalid number.</summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberMatcher.lastMatch">
+            <summary>The last successful match, null unless in {@link State#READY}.</summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberMatcher.searchIndex">
+            <summary>The next index to start searching at.</summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberMatcher.#ctor(PhoneNumbers.PhoneNumberUtil,System.String,System.String,PhoneNumbers.PhoneNumberUtil.Leniency,System.Int64)">
+             <summary>
+             Creates a new instance. See the factory methods in {@link PhoneNumberUtil} on how to obtain a
+             new instance.
+             </summary>
+            
+             <param name="util">      the phone number util to use</param>
+             <param name="text">      the character sequence that we will search, null for no text</param>
+             <param name="country">   the country to assume for phone numbers not written in international format
+                                      (with a leading plus, or with the international dialing prefix of the
+                                      specified region). May be null or "ZZ" if only numbers with a
+                                      leading plus should be considered.</param>
+             <param name="leniency">  the leniency to use when evaluating candidate phone numbers</param>
+             <param name="maxTries">  the maximum number of invalid numbers to try before giving up on the text.
+                                      This is to cover degenerate cases where the text has a lot of false positives
+                                      in it. Must be <c> >= 0</c>.</param>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberMatcher.Find(System.Int32)">
+            <summary>
+            Attempts to find the next subsequence in the searched sequence on or after <c>searchIndex</c>
+            that represents a phone number. Returns the next match, null if none was found.
+            </summary>
+            
+            <param name="index"> the search index to start searching at</param>
+            <returns> the phone number match found, null if none can be found</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberMatcher.TrimAfterFirstMatch(System.Text.RegularExpressions.Regex,System.String)">
+            <summary>
+            Trims away any characters after the first match of <c>pattern</c> in <c>candidate</c>,
+            returning the trimmed version.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberMatcher.IsLatinLetter(System.Char)">
+            <summary>
+            Helper method to determine if a character is a Latin-script letter or not. For our purposes,
+            combining marks should also return true since we assume they have been added to a preceding
+            Latin character.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberMatcher.ExtractMatch(System.String,System.Int32)">
+            <summary>
+            Attempts to extract a match from a <c>candidate</c> character sequence.
+            </summary>
+            
+            <param name="candidate">the candidate text that might contain a phone number</param>
+            <param name="offset">the offset of <c>candidate</c> within <see cref="F:PhoneNumbers.PhoneNumberMatcher.text" /></param>
+            <returns>the match found, null if none can be found</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberMatcher.ExtractInnerMatch(System.String,System.Int32)">
+            <summary>
+            Attempts to extract a match from {@code candidate} if the whole candidate does not qualify as a
+            match.
+            </summary>
+            
+            <param name="candidate">the candidate text that might contain a phone number</param>
+            <param name="offset">the current offset of <c>candidate</c> within <see cref="F:PhoneNumbers.PhoneNumberMatcher.text" /></param>
+            <returns>the match found, null if none can be found</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberMatcher.ParseAndVerify(System.String,System.Int32)">
+             <summary>
+             Parses a phone number from the {@code candidate} using {@link PhoneNumberUtil#parse} and
+             verifies it matches the requested {@link #leniency}. If parsing and verification succeed, a
+             corresponding <see cref="T:PhoneNumbers.PhoneNumberMatch" /> is returned, otherwise this method returns null.
+             </summary>
+            
+             <param name="candidate">the candidate match</param>
+             <param name="offset">the offset of <c>candidate</c> within <see cref="F:PhoneNumbers.PhoneNumberMatcher.text" /></param>
+             <returns>the parsed and validated phone number match, or null</returns>
+        </member>
+        <member name="T:PhoneNumbers.PhoneNumberMatcher.CheckGroups">
+             <summary>
+             Returns true if the groups of digits found in our candidate phone number match our
+             expectations.
+             </summary>
+            
+             <param name="util"> </param>
+             <param name="number"> the original number we found when parsing</param>
+             <param name="normalizedCandidate"> the candidate number, normalized to only contain ASCII digits,
+                 but with non-digits (spaces etc) retained</param>
+             <param name ="expectedNumberGroups"> the groups of digits that we would expect to see if we
+                 formatted this number</param>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberMatcher.GetNationalNumberGroups(PhoneNumbers.PhoneNumberUtil,PhoneNumbers.PhoneNumber)">
+            <summary>
+            Helper method to get the national-number part of a number, formatted without any national
+            prefix, and return it as a set of digit blocks that would be formatted together following
+            standard formatting rules.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberMatcher.GetNationalNumberGroups(PhoneNumbers.PhoneNumberUtil,PhoneNumbers.PhoneNumber,PhoneNumbers.NumberFormat)">
+            <summary>
+            Helper method to get the national-number part of a number, formatted without any national
+            prefix, and return it as a set of digit blocks that should be formatted together according to
+            the formatting pattern passed in.
+            </summary>
+        </member>
+        <member name="T:PhoneNumbers.PhoneNumberOfflineGeocoder">
+             An offline geocoder which provides geographical information related to a phone number.
+            
+             @author Shaopeng Jia
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberOfflineGeocoder.GetInstance">
+             Gets a {@link PhoneNumberOfflineGeocoder} instance to carry out international phone number
+             geocoding.
+            
+             <p /> The {@link PhoneNumberOfflineGeocoder} is implemented as a singleton. Therefore, calling
+             this method multiple times will only result in one instance being created.
+            
+             @return  a {@link PhoneNumberOfflineGeocoder} instance
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberOfflineGeocoder.LoadDataFile(PhoneNumbers.Locale,System.Int32)">
+             Preload the data file for the given language and country calling code, so that a future lookup
+             for this language and country calling code will not incur any file loading.
+            
+             @param locale  specifies the language of the data file to load
+             @param countryCallingCode   specifies the country calling code of phone numbers that are
+                 contained by the file to be loaded
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberOfflineGeocoder.GetCountryNameForNumber(PhoneNumbers.PhoneNumber,PhoneNumbers.Locale)">
+            Returns the customary display name in the given language for the given territory the phone
+            number is from.
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberOfflineGeocoder.GetRegionDisplayName(System.String,PhoneNumbers.Locale)">
+            Returns the customary display name in the given language for the given region.
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberOfflineGeocoder.GetDescriptionForValidNumber(PhoneNumbers.PhoneNumber,PhoneNumbers.Locale)">
+             Returns a text description for the given phone number, in the language provided. The
+             description might consist of the name of the country where the phone number is from, or the
+             name of the geographical area the phone number is from if more detailed information is
+             available.
+            
+             <p />This method assumes the validity of the number passed in has already been checked.
+            
+             @param number  a valid phone number for which we want to get a text description
+             @param languageCode  the language code for which the description should be written
+             @return  a text description for the given language code for the given phone number
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberOfflineGeocoder.GetDescriptionForValidNumber(PhoneNumbers.PhoneNumber,PhoneNumbers.Locale,System.String)">
+             As per {@link #getDescriptionForValidNumber(PhoneNumber, Locale)} but also considers the
+             region of the user. If the phone number is from the same region as the user, only a lower-level
+             description will be returned, if one exists. Otherwise, the phone number's region will be
+             returned, with optionally some more detailed information.
+            
+             <p>For example, for a user from the region "US" (United States), we would show "Mountain View,
+             CA" for a particular number, omitting the United States from the description. For a user from
+             the United Kingdom (region "GB"), for the same number we may show "Mountain View, CA, United
+             States" or even just "United States".</p>
+            
+             This method assumes the validity of the number passed in has already been checked.
+            
+             @param number  the phone number for which we want to get a text description
+             @param languageCode  the language code for which the description should be written
+             @param userRegion  the region code for a given user. This region will be omitted from the
+                 description if the phone number comes from this region. It is a two-letter uppercase ISO
+                 country code as defined by ISO 3166-1.
+             @return  a text description for the given language code for the given phone number, or empty
+                 string if the number passed in is invalid
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberOfflineGeocoder.GetDescriptionForNumber(PhoneNumbers.PhoneNumber,PhoneNumbers.Locale)">
+             As per {@link #getDescriptionForValidNumber(PhoneNumber, Locale)} but explicitly checks
+             the validity of the number passed in.
+            
+             @param number  the phone number for which we want to get a text description
+             @param languageCode  the language code for which the description should be written
+             @return  a text description for the given language code for the given phone number, or empty
+                 string if the number passed in is invalid
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberOfflineGeocoder.GetDescriptionForNumber(PhoneNumbers.PhoneNumber,PhoneNumbers.Locale,System.String)">
+             As per {@link #getDescriptionForValidNumber(PhoneNumber, Locale, String)} but
+             explicitly checks the validity of the number passed in.
+            
+             @param number  the phone number for which we want to get a text description
+             @param languageCode  the language code for which the description should be written
+             @param userRegion  the region code for a given user. This region will be omitted from the
+                 description if the phone number comes from this region. It is a two-letter uppercase ISO
+                 country code as defined by ISO 3166-1.
+             @return  a text description for the given language code for the given phone number, or empty
+                 string if the number passed in is invalid
+        </member>
+        <member name="T:PhoneNumbers.PhoneNumberUtil">
+            <summary>
+            Utility for international phone numbers. Functionality includes formatting, parsing and
+            validation.
+            <para>
+            If you use this library, and want to be notified about important changes, please sign up to
+            our mailing list: http://groups.google.com/group/libphonenumber-discuss/about
+            </para>
+            NOTE: A lot of methods in this class require Region Code strings.These must be provided using
+            ISO 3166-1 two-letter country-code format.These should be in upper-case. The list of the codes
+            can be found here:
+            http://www.iso.org/iso/country_codes/iso_3166_code_lists/country_names_and_code_elements.htm
+            <!--
+            @author Shaopeng Jia
+            @author Lara Rennie
+            -->
+            </summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberUtil.ValidStartCharPattern">
+            <summary>Regular expression of acceptable characters that may start a phone number for the purposes of
+            parsing. This allows us to strip away meaningless prefixes to phone numbers that may be
+            mistakenly given to us. This consists of digits, the plus symbol and arabic-indic digits. This
+            does not contain alpha characters, although they may be used later in the number. It also does
+            not include other punctuation, as this will be stripped later during parsing and is of no
+            information value when parsing a number.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.CreateExtnPattern(System.String)">
+            <summary>
+            Helper initializer method to create the regular-expression pattern to match extensions,
+            allowing the one-char extension symbols provided by <c>singleExtnSymbols</c>.
+            </summary>
+        </member>
+        <member name="T:PhoneNumbers.PhoneNumberUtil.MatchType">
+            <summary>Types of phone number matches. See detailed description beside the isNumberMatch() method.</summary>
+        </member>
+        <member name="T:PhoneNumbers.PhoneNumberUtil.ValidationResult">
+            <summary>Possible outcomes when testing if a PhoneNumber is possible.</summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberUtil.ValidationResult.IS_POSSIBLE">
+            <summary>The number length matches that of valid numbers for this region.</summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberUtil.ValidationResult.IS_POSSIBLE_LOCAL_ONLY">
+            <summary>
+            The number length matches that of local numbers for this region only (i.e. numbers that may
+            be able to be dialled within an area, but do not have all the information to be dialled from
+            anywhere inside or outside the country).
+            </summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberUtil.ValidationResult.INVALID_COUNTRY_CODE">
+            <summary>The number has an invalid country calling code.</summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberUtil.ValidationResult.TOO_SHORT">
+            <summary>The number is shorter than all valid numbers for this region.</summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberUtil.ValidationResult.INVALID_LENGTH">
+            <summary>
+            The number is longer than the shortest valid numbers for this region, shorter than the
+            longest valid numbers for this region, and does not itself have a number length that matches
+            valid numbers for this region. This can also be returned in the case where
+            isPossibleNumberForTypeWithReason was called, and there are no numbers of this type at all
+            for this region.
+            </summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberUtil.ValidationResult.TOO_LONG">
+            <summary>The number is longer than all valid numbers for this region.</summary>
+        </member>
+        <member name="T:PhoneNumbers.PhoneNumberUtil.Leniency">
+            <summary>
+            Leniency when <see cref="M:PhoneNumbers.PhoneNumberUtil.FindNumbers(System.String,System.String)"/> finding potential phone numbers in text
+            segments. The levels here are ordered in increasing strictness.
+            </summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberUtil.Leniency.POSSIBLE">
+            <summary>
+            Phone numbers accepted are <see cref="M:PhoneNumbers.PhoneNumberUtil.IsPossibleNumber(PhoneNumbers.PhoneNumber)"/>
+            possible, but not necessarily <see cref="M:PhoneNumbers.PhoneNumberUtil.IsValidNumber(PhoneNumbers.PhoneNumber)"/> valid.
+            </summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberUtil.Leniency.VALID">
+            <summary>
+            Phone numbers accepted are <see cref="M:PhoneNumbers.PhoneNumberUtil.IsPossibleNumber(PhoneNumbers.PhoneNumber)"/>
+            possible and <see cref="M:PhoneNumbers.PhoneNumberUtil.IsValidNumber(PhoneNumbers.PhoneNumber)"/> valid. Numbers written
+            in national format must have their national-prefix present if it is usually written for a
+            number of this type.
+            </summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberUtil.Leniency.STRICT_GROUPING">
+            <summary>
+            Phone numbers accepted are <see cref="M:PhoneNumbers.PhoneNumberUtil.IsValidNumber(PhoneNumbers.PhoneNumber)"/> valid and
+            are grouped in a possible way for this locale. For example, a US number written as
+            "65 02 53 00 00" and "650253 0000" are not accepted at this leniency level, whereas
+            "650 253 0000", "650 2530000" or "6502530000" are.
+            Numbers with more than one '/' symbol are also dropped at this level.
+            <para>
+            Warning: This level might result in lower coverage especially for regions outside of country
+            code "+1". If you are not sure about which level to use, email the discussion group
+            libphonenumber-discuss@googlegroups.com.
+            </para>
+            </summary>
+        </member>
+        <member name="F:PhoneNumbers.PhoneNumberUtil.Leniency.EXACT_GROUPING">
+            <summary>
+            Phone numbers accepted are <see cref="M:PhoneNumbers.PhoneNumberUtil.IsValidNumber(PhoneNumbers.PhoneNumber)"/> valid and
+            are grouped in the same way that we would have formatted it, or as a single block. For
+            example, a US number written as "650 2530000" is not accepted at this leniency level, whereas
+            "650 253 0000" or "6502530000" are.
+            Numbers with more than one '/' symbol are also dropped at this level.
+            <para>
+            Warning: This level might result in lower coverage especially for regions outside of country
+            code "+1". If you are not sure about which level to use, email the discussion group
+            libphonenumber-discuss@googlegroups.com.
+            </para>
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.ExtractPossibleNumber(System.String)">
+            <summary>
+            Attempts to extract a possible number from the string passed in. This currently strips all
+            leading characters that cannot be used to start a phone number. Characters that can be used to
+            start a phone number are defined in the VALID_START_CHAR_PATTERN. If none of these characters
+            are found in the number passed in, an empty string is returned. This function also attempts to
+            strip off any alternative extensions or endings if two or more are present, such as in the case
+            of: (530) 583-6985 x302/x2303. The second extension here makes this actually two phone numbers,
+            (530) 583-6985 x302 and (530) 583-6985 x2303. We remove the second extension so that the first
+            number is parsed correctly.
+            </summary>
+            <param name="number">The string that might contain a phone number.</param>
+            <returns>The number, stripped of any non-phone-number prefix (such as "Tel:") or an empty
+            string if no character used to start phone numbers (such as + or any digit) is
+            found in the number.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsViablePhoneNumber(System.String)">
+            <summary>
+            Checks to see if the string of characters could possibly be a phone number at all. At the
+            moment, checks to see that the string begins with at least 2 digits, ignoring any punctuation
+            commonly found in phone numbers.
+            This method does not require the number to be normalized in advance - but does assume that
+            leading non-number symbols have been removed, such as by the method extractPossibleNumber.
+            </summary>
+            <param name="number">String to be checked for viability as a phone number.</param>
+            <returns>True if the number could be a phone number of some sort, otherwise false.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.Normalize(System.String)">
+            <summary>
+            Normalizes a string of characters representing a phone number. This performs the following
+            conversions:
+              Punctuation is stripped.
+              For ALPHA/VANITY numbers:
+              Letters are converted to their numeric representation on a telephone keypad. The keypad
+                  used here is the one defined in ITU Recommendation E.161. This is only done if there are
+                  3 or more letters in the number, to lessen the risk that such letters are typos.
+              For other numbers:
+              Wide-ascii digits are converted to normal ASCII (European) digits.
+              Arabic-Indic numerals are converted to European numerals.
+              Spurious alpha characters are stripped.
+              Arabic-Indic numerals are converted to European numerals.
+            </summary>
+            <param name="number">A string of characters representing a phone number.</param>
+            <returns>The normalized string version of the phone number.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.NormalizeDigitsOnly(System.String)">
+            <summary>
+            Normalizes a string of characters representing a phone number. This converts wide-ascii and
+            arabic-indic numerals to European numerals, and strips punctuation and alpha characters.
+            </summary>
+            <param name="number">A string of characters representing a phone number.</param>
+            <returns>The normalized string version of the phone number.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.NormalizeDiallableCharsOnly(System.String)">
+            <summary>
+            Normalizes a string of characters representing a phone number. This strips all characters which
+            are not diallable on a mobile phone keypad (including all non-ASCII digits).
+            </summary>
+            <param name="number"> a string of characters representing a phone number</param>
+            <returns> the normalized string version of the phone number</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.ConvertAlphaCharactersInNumber(System.String)">
+            <summary>
+            Converts all alpha characters in a number to their respective digits on a keypad, but retains
+            existing formatting.
+            </summary>
+            <param name="number"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetLengthOfGeographicalAreaCode(PhoneNumbers.PhoneNumber)">
+             <summary>
+             Gets the length of the geographical area code from the
+             PhoneNumber object passed in, so that clients could use it
+             to split a national significant number into geographical area code and subscriber number. It
+             works in such a way that the resultant subscriber number should be diallable, at least on some
+             devices. An example of how this could be used:
+            
+             <code>
+             var phoneUtil = PhoneNumberUtil.getInstance();
+             var number = phoneUtil.parse("16502530000", "US");
+             var nationalSignificantNumber = phoneUtil.getNationalSignificantNumber(number);
+             string areaCode;
+             string subscriberNumber;
+            
+             var areaCodeLength = phoneUtil.getLengthOfGeographicalAreaCode(number);
+             if (areaCodeLength > 0)
+             {
+               areaCode = nationalSignificantNumber.substring(0, areaCodeLength);
+               subscriberNumber = nationalSignificantNumber.substring(areaCodeLength);
+             }
+             else {
+               areaCode = "";
+               subscriberNumber = nationalSignificantNumber;
+             }
+             </code>
+            
+             N.B.: area code is a very ambiguous concept, so the I18N team generally recommends against
+             using it for most purposes, but recommends using the more general <c>NationalNumber</c>
+             instead. Read the following carefully before deciding to use this method:
+             <ul>
+              <li> geographical area codes change over time, and this method honors those changes;
+                therefore, it doesn't guarantee the stability of the result it produces.</li>
+              <li> subscriber numbers may not be diallable from all devices (notably mobile devices, which
+                typically requires the full NationalNumber to be dialled in most regions).</li>
+              <li> most non-geographical numbers have no area codes, including numbers from non-geographical
+                entities</li>
+              <li> some geographical numbers have no area codes.</li>
+             </ul>
+             </summary>
+            
+             <param name="number">the PhoneNumber object for which clients want to know the length of the area code</param>
+             <returns>the length of area code of the PhoneNumber object passed in</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetLengthOfNationalDestinationCode(PhoneNumbers.PhoneNumber)">
+             <summary>
+             Gets the length of the national destination code (NDC) from the
+             PhoneNumber object passed in, so that clients could use it
+             to split a national significant number into NDC and subscriber number. The NDC of a phone
+             number is normally the first group of digit(s) right after the country calling code when the
+             number is formatted in the international format, if there is a subscriber number part that
+             follows.
+            
+             N.B.: similar to an area code, not all numbers have an NDC!
+            
+             An example of how this could be used:
+            
+             <code>
+             var phoneUtil = PhoneNumberUtil.getInstance();
+             var number = phoneUtil.parse("18002530000", "US");
+             var nationalSignificantNumber = phoneUtil.getNationalSignificantNumber(number);
+             string nationalDestinationCode;
+             string subscriberNumber;
+            
+             var nationalDestinationCodeLength = phoneUtil.getLengthOfNationalDestinationCode(number);
+             if (nationalDestinationCodeLength > 0)
+             {
+               nationalDestinationCode = nationalSignificantNumber.substring(0,
+                   nationalDestinationCodeLength);
+               subscriberNumber = nationalSignificantNumber.substring(nationalDestinationCodeLength);
+             }
+             else
+             {
+               nationalDestinationCode = "";
+               subscriberNumber = nationalSignificantNumber;
+             }
+             </code>
+            
+             Refer to the unit tests to see the difference between this function and
+             <see cref="M:PhoneNumbers.PhoneNumberUtil.GetLengthOfGeographicalAreaCode(PhoneNumbers.PhoneNumber)" />.
+             </summary>
+            
+             <param name="number"> the PhoneNumber object for which clients want to know the length of the NDC.</param>
+             <returns> the length of NDC of the PhoneNumber object passed in, which could be zero</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetCountryMobileToken(System.Int32)">
+            <summary>
+            Returns the mobile token for the provided country calling code if it has one, otherwise
+            returns an empty string. A mobile token is a number inserted before the area code when dialing
+            a mobile number from that country from abroad.
+            </summary>
+            <param name="countryCallingCode">The country calling code for which we want the mobile token.</param>
+            <returns>The mobile token, as a string, for the given country calling code.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.NormalizeHelper(System.String,System.Collections.Generic.Dictionary{System.Char,System.Char},System.Boolean)">
+            <summary>
+            Normalizes a string of characters representing a phone number by replacing all characters found
+            in the accompanying map with the values therein, and stripping all other characters if
+            removeNonMatches is true.
+            </summary>
+            <param name="number">A string of characters representing a phone number.</param>
+            <param name="normalizationReplacements">A mapping of characters to what they should be replaced by in
+            the normalized version of the phone number.</param>
+            <param name="removeNonMatches">indicates whether characters that are not able to be replaced
+            should be stripped from the number. If this is false, they
+            will be left unchanged in the number.</param>
+            <returns>The normalized string version of the phone number.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetInstance(System.String,System.Collections.Generic.Dictionary{System.Int32,System.Collections.Generic.List{System.String}})">
+            <summary>
+            Gets a {@link PhoneNumberUtil} instance to carry out international phone number formatting,
+            parsing, or validation. The instance is loaded with all phone number metadata.
+            The <see cref="T:PhoneNumbers.PhoneNumberUtil" /> is implemented as a singleton.Therefore, calling getInstance
+            multiple times will only result in one instance being created.
+            </summary>
+            <returns> a PhoneNumberUtil instance</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetSupportedRegions">
+            <summary>
+            Returns all regions the library has metadata for.
+            </summary>
+            <returns>An unordered set of the two-letter region codes for every geographical region the
+            library supports.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetSupportedGlobalNetworkCallingCodes">
+            <summary>
+            Returns all global network calling codes the library has metadata for.
+            </summary>
+            <returns>An unordered set of the country calling codes for every non-geographical entity the
+            library supports.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetSupportedCallingCodes">
+            <summary>
+            Returns all country calling codes the library has metadata for, covering both non-geographical
+            entities (global network calling codes) and those used for geographical entities. This could be
+            used to populate a drop-down box of country calling codes for a phone-number widget, for
+            instance.
+            </summary>
+            <returns>An unordered set of the country calling codes for every geographical and
+            non-geographical entity the library supports.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.DescHasPossibleNumberData(PhoneNumbers.PhoneNumberDesc)">
+            <summary>
+            Returns true if there is any possible number data set for a particular PhoneNumberDesc.
+            </summary>
+            <param name="desc"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.DescHasData(PhoneNumbers.PhoneNumberDesc)">
+            <summary>
+            Returns true if there is any data set for a particular PhoneNumberDesc.
+            </summary>
+            <param name="desc"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetSupportedTypesForMetadata(PhoneNumbers.PhoneMetadata)">
+            <summary>
+            Returns the types we have metadata for based on the PhoneMetadata object passed in, which must
+            be non-null.
+            </summary>
+            <param name="metadata"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetSupportedTypesForRegion(System.String)">
+             <summary>
+             Returns the types for a given region which the library has metadata for. Will not include
+             FIXED_LINE_OR_MOBILE (if numbers in this region could be classified as FIXED_LINE_OR_MOBILE,
+             both FIXED_LINE and MOBILE would be present) and UNKNOWN.
+            
+             No types will be returned for invalid or unknown region codes.
+             </summary>
+             <param name="regionCode"></param>
+             <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetSupportedTypesForNonGeoEntity(System.Int32)">
+             <summary>
+             Returns the types for a country-code belonging to a non-geographical entity which the library
+             has metadata for. Will not include FIXED_LINE_OR_MOBILE (if numbers for this non-geographical
+             entity could be classified as FIXED_LINE_OR_MOBILE, both FIXED_LINE and MOBILE would be
+             present) and UNKNOWN.
+            
+             No types will be returned for country calling codes that do not map to a known non-geographical
+             entity.
+             </summary>
+             <param name="countryCallingCode"></param>
+             <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetInstance">
+            <summary>
+            Gets a <see cref="T:PhoneNumbers.PhoneNumberUtil"/> instance to carry out international phone number formatting,
+            parsing, or validation. The instance is loaded with phone number metadata for a number of most
+            commonly used regions.
+            <para>
+            The <see cref="T:PhoneNumbers.PhoneNumberUtil"/> is implemented as a singleton. Therefore, calling getInstance
+            multiple times will only result in one instance being created.
+            </para>
+            </summary>
+            <returns>A <see cref="T:PhoneNumbers.PhoneNumberUtil"/> instance.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.FormattingRuleHasFirstGroupOnly(System.String)">
+            <summary>
+            Helper function to check if the national prefix formatting rule has the first group only, i.e.,
+            does not start with the national prefix.
+            </summary>
+            <param name="nationalPrefixFormattingRule"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsNumberGeographical(PhoneNumbers.PhoneNumber)">
+            <summary>
+            Tests whether a phone number has a geographical association. It checks if the number is
+            associated with a certain region in the country to which it belongs. Note that this doesn't
+            verify if the number is actually in use.
+            </summary>
+            <param name="phoneNumber"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsNumberGeographical(PhoneNumbers.PhoneNumberType,System.Int32)">
+            <summary>
+            Overload of isNumberGeographical(PhoneNumber), since calculating the phone number type is
+            expensive; if we have already done this, we don't want to do it again.
+            </summary>
+            <param name="phoneNumberType"></param>
+            <param name="countryCallingCode"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsValidRegionCode(System.String)">
+            <summary>
+            Helper function to check region code is not unknown or null.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.HasValidCountryCallingCode(System.Int32)">
+            <summary>
+            Helper function to check the country calling code is valid.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.Format(PhoneNumbers.PhoneNumber,PhoneNumbers.PhoneNumberFormat)">
+            <summary>
+            Formats a phone number in the specified format using default rules. Note that this does not
+            promise to produce a phone number that the user can dial from where they are - although we do
+            format in either 'national' or 'international' format depending on what the client asks for, we
+            do not currently support a more abbreviated format, such as for users in the same "area" who
+            could potentially dial the number without area code. Note that if the phone number has a
+            country calling code of 0 or an otherwise invalid country calling code, we cannot work out
+            which formatting rules to apply so we return the national significant number with no formatting
+            applied.
+            </summary>
+            <param name="number">The phone number to be formatted.</param>
+            <param name="numberFormat">The format the phone number should be formatted into.</param>
+            <returns>The formatted phone number.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.Format(PhoneNumbers.PhoneNumber,PhoneNumbers.PhoneNumberFormat,System.Text.StringBuilder)">
+            <summary>
+            Same as <see cref="M:PhoneNumbers.PhoneNumberUtil.Format(PhoneNumbers.PhoneNumber,PhoneNumbers.PhoneNumberFormat)"/>, but accepts a mutable StringBuilder as
+            a parameter to decrease object creation when invoked many times.
+            </summary>
+            <param name="number"></param>
+            <param name="numberFormat"></param>
+            <param name="formattedNumber"></param>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.FormatByPattern(PhoneNumbers.PhoneNumber,PhoneNumbers.PhoneNumberFormat,System.Collections.Generic.List{PhoneNumbers.NumberFormat})">
+            <summary>
+            Formats a phone number in the specified format using client-defined formatting rules. Note that
+            if the phone number has a country calling code of zero or an otherwise invalid country calling
+            code, we cannot work out things like whether there should be a national prefix applied, or how
+            to format extensions, so we return the national significant number with no formatting applied.
+            </summary>
+            <param name="number">The phone number to be formatted.</param>
+            <param name="numberFormat">The format the phone number should be formatted into.</param>
+            <param name="userDefinedFormats">Formatting rules specified by clients.</param>
+            <returns>The formatted phone number.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.FormatNationalNumberWithCarrierCode(PhoneNumbers.PhoneNumber,System.String)">
+            <summary>
+            Formats a phone number in national format for dialing using the carrier as specified in the
+            carrierCode. The carrierCode will always be used regardless of whether the
+            phone number already has a preferred domestic carrier code stored. If carrierCode
+            contains an empty string, returns the number in national format without any carrier code.
+            </summary>
+            <param name="number">The phone number to be formatted.</param>
+            <param name="carrierCode">The carrier selection code to be used.</param>
+            <returns>The formatted phone number in national format for dialing using the carrier as
+            specified in the carrierCode.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.FormatNationalNumberWithPreferredCarrierCode(PhoneNumbers.PhoneNumber,System.String)">
+             <summary>
+             Formats a phone number in national format for dialing using the carrier as specified in the
+             preferredDomesticCarrierCode field of the PhoneNumber object passed in. If that is missing,
+             use the fallbackCarrierCode passed in instead. If there is no
+             preferredDomesticCarrierCode, and the fallbackCarrierCode contains an empty
+             string, return the number in national format without any carrier code.
+            
+             <para>Use <see cref="M:PhoneNumbers.PhoneNumberUtil.FormatNationalNumberWithCarrierCode(PhoneNumbers.PhoneNumber,System.String)"/> instead if the carrier code passed in
+             should take precedence over the number's preferredDomesticCarrierCode when formatting.</para>
+             </summary>
+             <param name="number">The phone number to be formatted.</param>
+             <param name="fallbackCarrierCode">The carrier selection code to be used, if none is found in the
+             phone number itself.</param>
+             <returns>The formatted phone number in national format for dialing using the number's
+             preferredDomesticCarrierCode, or the fallbackCarrierCode passed in if
+             none is found.
+             </returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.FormatNumberForMobileDialing(PhoneNumbers.PhoneNumber,System.String,System.Boolean)">
+            <summary>
+            Returns a number formatted in such a way that it can be dialed from a mobile phone in a
+            specific region.If the number cannot be reached from the region(e.g.some countries block
+            toll-free numbers from being called outside of the country), the method returns an empty
+            string.
+            </summary>
+            <param name="number">The phone number to be formatted.</param>
+            <param name="regionCallingFrom">The region where the call is being placed.</param>
+            <param name="withFormatting">Whether the number should be returned with formatting symbols, such as
+            spaces and dashes.</param>
+            <returns>The formatted phone number.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.FormatOutOfCountryCallingNumber(PhoneNumbers.PhoneNumber,System.String)">
+            <summary>
+            Formats a phone number for out-of-country dialing purposes.If no regionCallingFrom is
+            supplied, we format the number in its INTERNATIONAL format.If the country calling code is the
+            same as that of the region where the number is from, then NATIONAL formatting will be applied.
+            <para>
+            If the number itself has a country calling code of zero or an otherwise invalid country
+            calling code, then we return the number with no formatting applied.
+            </para>
+            <para>Note this function takes care of the case for calling inside of NANPA and between Russia and
+            Kazakhstan (who share the same country calling code). In those cases, no international prefix
+            is used.For regions which have multiple international prefixes, the number in its
+            INTERNATIONAL format will be returned instead.</para>
+            </summary>
+            <param name="number">The phone number to be formatted.</param>
+            <param name="regionCallingFrom">The region where the call is being placed.</param>
+            <returns>The formatted phone number.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.FormatInOriginalFormat(PhoneNumbers.PhoneNumber,System.String)">
+            <summary>
+            Formats a phone number using the original phone number format that the number is parsed from.
+            The original format is embedded in the country_code_source field of the PhoneNumber object
+            passed in. If such information is missing, the number will be formatted into the NATIONAL
+            format by default. When we don't have a formatting pattern for the number, the method returns
+            the raw input when it is available.
+            <para>
+            Note this method guarantees no digit will be inserted, removed or modified as a result of
+            formatting.</para>
+            </summary>
+            <param name="number">The phone number that needs to be formatted in its original number format.</param>
+            <param name="regionCallingFrom">The region whose IDD needs to be prefixed if the original number
+            has one.</param>
+            <returns>The formatted phone number in its original number format.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.FormatOutOfCountryKeepingAlphaChars(PhoneNumbers.PhoneNumber,System.String)">
+             <summary>
+             Formats a phone number for out-of-country dialing purposes.
+            
+             Note that in this version, if the number was entered originally using alpha characters and
+             this version of the number is stored in raw_input, this representation of the number will be
+             used rather than the digit representation. Grouping information, as specified by characters
+             such as "-" and " ", will be retained.
+            
+             <p><b>Caveats:</b></p>
+             <ul>
+              <li> This will not produce good results if the country calling code is both present in the raw
+                   input _and_ is the start of the national number. This is not a problem in the regions
+                   which typically use alpha numbers. </li>
+              <li> This will also not produce good results if the raw input has any grouping information
+                   within the first three digits of the national number, and if the function needs to strip
+                   preceding digits/words in the raw input before these digits. Normally people group the
+                   first three digits together so this is not a huge problem - and will be fixed if it
+                   proves to be so. </li>
+             </ul>
+             </summary>
+            
+             <param name="number">the phone number that needs to be formatted</param>
+             <param name="regionCallingFrom">the region where the call is being placed</param>
+             <returns>the formatted phone number</returns>
+            
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetNationalSignificantNumber(PhoneNumbers.PhoneNumber)">
+            <summary>
+            Gets the national significant number of the a phone number. Note a national significant number
+            doesn't contain a national prefix or any formatting.
+            </summary>
+            <param name="number">The PhoneNumber object for which the national significant number is needed.</param>
+            <returns>The national significant number of the PhoneNumber object passed in.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.PrefixNumberWithCountryCallingCode(System.Int32,PhoneNumbers.PhoneNumberFormat,System.Text.StringBuilder)">
+            A helper function that is used by format and formatByPattern.
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetExampleNumber(System.String)">
+            <summary>
+            Gets a valid number for the specified region.
+            </summary>
+            <param name="regionCode">Region for which an example number is needed.</param>
+            <returns>A valid fixed-line number for the specified region.Returns null when the metadata
+            does not contain such information, or the region 001 is passed in. For 001 (representing
+            non - geographical numbers), call <see cref="M:PhoneNumbers.PhoneNumberUtil.GetExampleNumberForNonGeoEntity(System.Int32)"/> instead.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetExampleNumberForType(System.String,PhoneNumbers.PhoneNumberType)">
+            <summary>
+            Gets a valid number for the specified region and number type.
+            </summary>
+            <param name="regionCode">Region for which an example number is needed.</param>
+            <param name="type">The type of number that is needed.</param>
+            <returns>A valid number for the specified region and type. Returns null when the metadata
+            does not contain such information or if an invalid region or region 001 was entered.
+            For 001 (representing non-geographical numbers), call
+            <see cref="M:PhoneNumbers.PhoneNumberUtil.GetExampleNumberForNonGeoEntity(System.Int32)"/> instead.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetExampleNumberForNonGeoEntity(System.Int32)">
+            <summary>
+            Gets a valid number for the specified country calling code for a non-geographical entity.
+            </summary>
+            <param name="countryCallingCode">The country calling code for a non-geographical entity</param>
+            <returns>A valid number for the non-geographical entity. Returns null when the metadata
+            does not contain such information, or the country calling code passed in does not belong
+            to a non-geographical entity.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.MaybeAppendFormattedExtension(PhoneNumbers.PhoneNumber,PhoneNumbers.PhoneMetadata,PhoneNumbers.PhoneNumberFormat,System.Text.StringBuilder)">
+            Appends the formatted extension of a phone number to formattedNumber, if the phone number had
+            an extension specified.
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetNumberType(PhoneNumbers.PhoneNumber)">
+            <summary>
+            Gets the type of a phone number.
+            </summary>
+            <param name="number">The phone number that we want to know the type.</param>
+            <returns>The type of the phone number.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsValidNumber(PhoneNumbers.PhoneNumber)">
+            <summary>
+            Tests whether a phone number matches a valid pattern. Note this doesn't verify the number
+            is actually in use, which is impossible to tell by just looking at a number itself.
+            </summary>
+            <param name="number">The phone number that we want to validate.</param>
+            <returns>A bool that indicates whether the number is of a valid pattern.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsValidNumberForRegion(PhoneNumbers.PhoneNumber,System.String)">
+            <summary>
+            Tests whether a phone number is valid for a certain region. Note this doesn't verify the number
+            is actually in use, which is impossible to tell by just looking at a number itself. If the
+            country calling code is not the same as the country calling code for the region, this
+            immediately exits with false. After this, the specific number pattern rules for the region are
+            examined. This is useful for determining for example whether a particular number is valid for
+            Canada, rather than just a valid NANPA number.
+            </summary>
+            <param name="number">The phone number that we want to validate.</param>
+            <param name="regionCode">The region that we want to validate the phone number for.</param>
+            <returns>A bool that indicates whether the number is of a valid pattern.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetRegionCodeForNumber(PhoneNumbers.PhoneNumber)">
+            <summary>
+            Returns the region where a phone number is from. This could be used for geocoding at the region
+            level.
+            </summary>
+            <param name="number">The phone number whose origin we want to know.</param>
+            <returns>The region where the phone number is from, or null if no region matches this calling
+            code.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetRegionCodeForCountryCode(System.Int32)">
+            <summary>
+            Returns the region code that matches the specific country calling code. In the case of no
+            region code being found, ZZ will be returned. In the case of multiple regions, the one
+            designated in the metadata as the "main" region for this calling code will be returned.
+            </summary>
+            <param name="countryCallingCode"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetCountryCodeForRegion(System.String)">
+            <summary>
+            Returns the country calling code for a specific region. For example, this would be 1 for the
+            United States, and 64 for New Zealand.
+            </summary>
+            <param name="regionCode">Region that we want to get the country calling code for.</param>
+            <returns>The country calling code for the region denoted by regionCode.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetCountryCodeForValidRegion(System.String)">
+            <summary>
+            Returns the country calling code for a specific region. For example, this would be 1 for the
+            United States, and 64 for New Zealand. Assumes the region is already valid.
+            </summary>
+            <param name="regionCode">The region that we want to get the country calling code for.</param>
+            <returns>The country calling code for the region denoted by regionCode.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetNddPrefixForRegion(System.String,System.Boolean)">
+            <summary>
+            Returns the national dialling prefix for a specific region. For example, this would be 1 for
+            the United States, and 0 for New Zealand. Set stripNonDigits to true to strip symbols like "~"
+            (which indicates a wait for a dialling tone) from the prefix returned. If no national prefix is
+            present, we return null.
+            <para>
+            Warning: Do not use this method for do-your-own formatting - for some regions, the
+            national dialling prefix is used only for certain types of numbers. Use the library's
+            formatting functions to prefix the national prefix when required.</para>
+            </summary>
+            <param name="regionCode">The region that we want to get the dialling prefix for.</param>
+            <param name="stripNonDigits">True to strip non-digits from the national dialling prefix.</param>
+            <returns>The dialling prefix for the region denoted by regionCode.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsNANPACountry(System.String)">
+            <summary>
+            Checks if this is a region under the North American Numbering Plan Administration (NANPA).
+            </summary>
+            <param name="regionCode"></param>
+            <returns>True if regionCode is one of the regions under NANPA.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsAlphaNumber(System.String)">
+            <summary>
+            Checks if the number is a valid vanity (alpha) number such as 800 MICROSOFT. A valid vanity
+            number will start with at least 3 digits and will have three or more alpha characters. This
+            does not do region-specific checks - to work out if this number is actually valid for a region,
+            it should be parsed and methods such as <see cref="M:PhoneNumbers.PhoneNumberUtil.IsPossibleNumberWithReason(PhoneNumbers.PhoneNumber)"/> and
+            <see cref="M:PhoneNumbers.PhoneNumberUtil.IsValidNumber(PhoneNumbers.PhoneNumber)"/> should be used.
+            </summary>
+            <param name="number">The number that needs to be checked.</param>
+            <returns>True if the number is a valid vanity number.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsPossibleNumber(PhoneNumbers.PhoneNumber)">
+             <summary>
+             Convenience wrapper around <see cref="M:PhoneNumbers.PhoneNumberUtil.IsPossibleNumberWithReason(PhoneNumbers.PhoneNumber)"/>. Instead of returning the reason
+             for failure, this method returns true if the number is either a possible fully-qualified number
+             (containing the area code and country code), or if the number could be a possible local number
+             (with a country code, but missing an area code). Local numbers are considered possible if they
+            could be possibly dialled in this format: if the area code is needed for a call to connect, the
+             number is not considered possible without it.
+             </summary>
+             <param name="number">The number that needs to be checked.</param>
+             <returns>True if the number is possible.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsPossibleNumberForType(PhoneNumbers.PhoneNumber,PhoneNumbers.PhoneNumberType)">
+             <summary>Convenience wrapper around {@link #isPossibleNumberForTypeWithReason}. Instead of returning the
+             reason for failure, this method returns true if the number is either a possible fully-qualified
+             number (containing the area code and country code), or if the number could be a possible local
+             number (with a country code, but missing an area code). Local numbers are considered possible
+             if they could be possibly dialled in this format: if the area code is needed for a call to
+             connect, the number is not considered possible without it. </summary>
+            
+             <param name="number">the number that needs to be checked</param>
+             <param name="type">the type we are interested in</param>
+             <returns>if the number is possible for this particular type</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.TestNumberLength(System.Int32,PhoneNumbers.PhoneMetadata,PhoneNumbers.PhoneNumberType)">
+            <summary>
+            Helper method to check a number against possible lengths for this number, and determine
+            whether it matches, or is too short or too long.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsPossibleNumberWithReason(PhoneNumbers.PhoneNumber)">
+            <summary>
+            Check whether a phone number is a possible number. It provides a more lenient check than
+            <see cref="M:PhoneNumbers.PhoneNumberUtil.IsValidNumber(PhoneNumbers.PhoneNumber)" /> in the following sense:
+            <ol>
+              <li> It only checks the length of phone numbers. In particular, it doesn't check starting
+                   digits of the number. </li>
+              <li> It doesn't attempt to figure out the type of the number, but uses general rules which
+                   applies to all types of phone numbers in a region. Therefore, it is much faster than
+                   isValidNumber. </li>
+              <li> For some numbers (particularly fixed-line), many regions have the concept of area code,
+                   which together with subscriber number constitute the national significant number. It is
+                   sometimes okay to dial only the subscriber number when dialing in the same area. This
+                   function will return IS_POSSIBLE_LOCAL_ONLY if the subscriber-number-only version is
+                   passed in. On the other hand, because isValidNumber validates using information on both
+                   starting digits (for fixed line numbers, that would most likely be area codes) and
+                   length (obviously includes the length of area codes for fixed line numbers), it will
+                   return false for the subscriber-number-only version. </li>
+            </ol>
+            </summary>
+            <param name="number">the number that needs to be checked</param>
+            <returns>a ValidationResult object which indicates whether the number is possible</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsPossibleNumberForTypeWithReason(PhoneNumbers.PhoneNumber,PhoneNumbers.PhoneNumberType)">
+             <summary>
+             Check whether a phone number is a possible number of a particular type. For types that don't
+             exist in a particular region, this will return a result that isn't so useful; it is recommended
+             that you use {@link #getSupportedTypesForRegion} or {@link #getSupportedTypesForNonGeoEntity}
+             respectively before calling this method to determine whether you should call it for this number
+             at all.
+            
+             This provides a more lenient check than {@link #isValidNumber} in the following sense:
+            
+             <ol>
+               <li> It only checks the length of phone numbers. In particular, it doesn't check starting
+                    digits of the number.</li>
+               <li> For some numbers (particularly fixed-line), many regions have the concept of area code,
+                    which together with subscriber number constitute the national significant number. It is
+                    sometimes okay to dial only the subscriber number when dialing in the same area. This
+                    function will return IS_POSSIBLE_LOCAL_ONLY if the subscriber-number-only version is
+                    passed in. On the other hand, because isValidNumber validates using information on both
+                    starting digits (for fixed line numbers, that would most likely be area codes) and
+                    length (obviously includes the length of area codes for fixed line numbers), it will
+                    return false for the subscriber-number-only version.</li>
+             </ol>
+            </summary>
+            
+             <param name="number">the number that needs to be checked</param>
+             <param name="type">the type we are interested in </param>
+             <returns>A ValidationResult object which indicates whether the number is possible</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsPossibleNumber(System.String,System.String)">
+            <summary>
+            Check whether a phone number is a possible number given a number in the form of a string, and
+            the region where the number could be dialed from. It provides a more lenient check than
+            <see cref="M:PhoneNumbers.PhoneNumberUtil.IsValidNumber(PhoneNumbers.PhoneNumber)"/>. See <see cref="M:PhoneNumbers.PhoneNumberUtil.IsPossibleNumber(PhoneNumbers.PhoneNumber)"/> for details.
+            <para>
+            This method first parses the number, then invokes <see cref="M:PhoneNumbers.PhoneNumberUtil.IsPossibleNumber(PhoneNumbers.PhoneNumber)"/>
+            with the resultant PhoneNumber object.</para>
+            </summary>
+            <param name="number">The number that needs to be checked, in the form of a string.</param>
+            <param name="regionDialingFrom">The region that we are expecting the number to be dialed from.
+            Note this is different from the region where the number belongs.  For example, the number
+            +1 650 253 0000 is a number that belongs to US. When written in this form, it can be
+            dialed from any region. When it is written as 00 1 650 253 0000, it can be dialed from any
+            region which uses an international dialling prefix of 00. When it is written as
+            650 253 0000, it can only be dialed from within the US, and when written as 253 0000, it
+            can only be dialed from within a smaller area in the US (Mountain View, CA, to be more
+            specific).</param>
+            <returns>True if the number is possible.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.TruncateTooLongNumber(PhoneNumbers.PhoneNumber.Builder)">
+            <summary>
+            Attempts to extract a valid number from a phone number that is too long to be valid, and resets
+            the PhoneNumber object passed in to that valid version. If no valid number could be extracted,
+            the PhoneNumber object passed in will not be modified.
+            </summary>
+            <param name="number">A PhoneNumber object which contains a number that is too long to be valid.</param>
+            <returns>True if a valid phone number can be successfully extracted.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.GetAsYouTypeFormatter(System.String)">
+             <summary>
+             Gets an <see cref="T:PhoneNumbers.AsYouTypeFormatter"/> for the specific region.
+             </summary>
+             <param name="regionCode">Region where the phone number is being entered.</param>
+            
+             <returns>An <see cref="T:PhoneNumbers.AsYouTypeFormatter"/> object, which can be used
+             to format phone numbers in the specific region "as you type".</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.MaybeExtractCountryCode(System.String,PhoneNumbers.PhoneMetadata,System.Text.StringBuilder,System.Boolean,PhoneNumbers.PhoneNumber.Builder)">
+             <summary>
+             Tries to extract a country calling code from a number. This method will return zero if no
+             country calling code is considered to be present. Country calling codes are extracted in the
+             following ways:
+             <ul>
+              <li> by stripping the international dialing prefix of the region the person is dialing from,
+                   if this is present in the number, and looking at the next digits</li>
+              <li> by stripping the '+' sign if present and then looking at the next digits</li>
+              <li> by comparing the start of the number and the country calling code of the default region.
+                   If the number is not considered possible for the numbering plan of the default region
+                   initially, but starts with the country calling code of this region, validation will be
+                   reattempted after stripping this country calling code. If this number is considered a
+                   possible number, then the first digits will be considered the country calling code and
+                   removed as such.</li>
+             </ul>
+             It will throw a NumberParseException if the number starts with a '+' but the country calling
+             code supplied after this does not match that of any known region.
+             </summary>
+            
+             <param name="number">non-normalized telephone number that we wish to extract a country calling
+                 code from - may begin with '+'</param>
+             <param name="defaultRegionMetadata">metadata about the region this number may be from</param>
+             <param name="nationalNumber">a string buffer to store the national significant number in, in the case
+                 that a country calling code was extracted. The number is appended to any existing contents.
+                 If no country calling code was extracted, this will be left unchanged.</param>
+             <param name="keepRawInput">true if the country_code_source and preferred_carrier_code fields of
+                 phoneNumber should be populated.</param>
+             <param name="phoneNumber">the PhoneNumber object where the country_code and country_code_source need
+                 to be populated. Note the country_code is always populated, whereas country_code_source is
+                 only populated when keepCountryCodeSource is true.</param>
+             <returns>the country calling code extracted or 0 if none could be extracted</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.ParsePrefixAsIdd(PhoneNumbers.PhoneRegex,System.Text.StringBuilder)">
+            <summary>
+            Strips the IDD from the start of the number if present. Helper function used by
+            <see cref="M:PhoneNumbers.PhoneNumberUtil.MaybeStripInternationalPrefixAndNormalize(System.Text.StringBuilder,System.String)" />.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.MaybeStripInternationalPrefixAndNormalize(System.Text.StringBuilder,System.String)">
+            <summary>
+            Strips any international prefix (such as +, 00, 011) present in the number provided, normalizes
+            the resulting number, and indicates if an international prefix was present.
+            </summary>
+            <param name="number">The non-normalized telephone number that we wish to strip any international
+            dialing prefix from.</param>
+            <param name="possibleIddPrefix">The international direct dialing prefix from the region we
+            think this number may be dialed in.</param>
+            <returns>The corresponding CountryCodeSource if an international dialing prefix could be
+            removed from the number, otherwise CountryCodeSource.FROM_DEFAULT_COUNTRY if the number did
+            not seem to be in international format.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.MaybeStripNationalPrefixAndCarrierCode(System.Text.StringBuilder,PhoneNumbers.PhoneMetadata,System.Text.StringBuilder)">
+            <summary>
+            Strips any national prefix (such as 0, 1) present in the number provided.
+            </summary>
+            <param name="number">The normalized telephone number that we wish to strip any national
+            dialing prefix from.</param>
+            <param name="metadata">The metadata for the region that we think this number is from.</param>
+            <param name="carrierCode">A place to insert the carrier code if one is extracted.</param>
+            <returns>True if a national prefix or carrier code (or both) could be extracted.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.MaybeStripExtension(System.Text.StringBuilder,System.String)">
+            <summary>
+            Strips any extension (as in, the part of the number dialled after the call is connected,
+            usually indicated with extn, ext, x or similar) from the end of the number, and returns it.
+            </summary>
+            <param name="number">The non-normalized telephone number that we wish to strip the extension from.</param>
+            <param name="numberString">The same number as a string</param>
+            <returns>The phone extension.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.CheckRegionForParsing(System.Text.StringBuilder,System.String)">
+            <summary>
+            Checks to see that the region code used is valid, or if it is not valid, that the number to
+            parse starts with a + symbol so that we can attempt to infer the region from the number.
+            </summary>
+            <returns>if it can use the region provided or the region can be inferred.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.Parse(System.String,System.String)">
+            <summary>
+            Parses a string and returns it in proto buffer format. This method will throw a
+            <see cref="T:PhoneNumbers.NumberParseException"/> if the number is not considered to be
+            a possible number. Note that validation of whether the number is actually a valid number for a
+            particular region is not performed. This can be done separately with <see cref="M:PhoneNumbers.PhoneNumberUtil.IsValidNumber(PhoneNumbers.PhoneNumber)"/>.
+            </summary>
+            <param name="numberToParse">Number that we are attempting to parse. This can contain formatting
+            such as +, ( and -, as well as a phone number extension. It can also
+            be provided in RFC3966 format.</param>
+            <param name="defaultRegion">Region that we are expecting the number to be from. This is only used
+            if the number being parsed is not written in international format.
+            The country_code for the number in this case would be stored as that
+            of the default region supplied. If the number is guaranteed to
+            start with a '+' followed by the country calling code, then "ZZ" or
+            null can be supplied.</param>
+            <returns>A phone number proto buffer filled with the parsed number</returns>
+            <exception cref="T:PhoneNumbers.NumberParseException">If the string is not considered to be a viable phone number or if
+            no default region was supplied and the number is not in
+            international format (does not start with +).
+            </exception>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.Parse(System.String,System.String,PhoneNumbers.PhoneNumber.Builder)">
+            <summary>
+            Same as <see cref="M:PhoneNumbers.PhoneNumberUtil.Parse(System.String,System.String)"/>, but accepts mutable PhoneNumber as a parameter to
+            decrease object creation when invoked many times.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.ParseAndKeepRawInput(System.String,System.String)">
+            <summary>
+            Parses a string and returns it in proto buffer format. This method differs from {@link #parse}
+            in that it always populates the raw_input field of the protocol buffer with numberToParse as
+            well as the country_code_source field.
+            </summary>
+            <param name="numberToParse">Number that we are attempting to parse. This can contain formatting
+            such as +, ( and -, as well as a phone number extension.</param>
+            <param name="defaultRegion">Region that we are expecting the number to be from. This is only used
+            if the number being parsed is not written in international format.
+            The country calling code for the number in this case would be stored
+            as that of the default region supplied.</param>
+            <returns>A phone number proto buffer filled with the parsed number.</returns>
+            <exception cref="T:PhoneNumbers.NumberParseException">If the string is not considered to be a viable phone number or if
+            no default region was supplied.</exception>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.ParseAndKeepRawInput(System.String,System.String,PhoneNumbers.PhoneNumber.Builder)">
+            <summary>
+            Same as <see cref="M:PhoneNumbers.PhoneNumberUtil.ParseAndKeepRawInput(System.String,System.String)"/>, but accepts a mutable PhoneNumber as
+            a parameter to decrease object creation when invoked many times.
+            </summary>
+            <param name="numberToParse"></param>
+            <param name="defaultRegion"></param>
+            <param name="phoneNumber"></param>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.FindNumbers(System.String,System.String)">
+            <summary>
+            Returns an iterable over all <see cref="T:PhoneNumbers.PhoneNumberMatch"/> PhoneNumberMatches in text. This
+            is a shortcut for <see cref="M:PhoneNumbers.PhoneNumberUtil.FindNumbers(System.String,System.String,PhoneNumbers.PhoneNumberUtil.Leniency,System.Int64)"/>
+            getMatcher(text, defaultRegion, Leniency.VALID, Long.MAX_VALUE)}.
+            </summary>
+            <param name="text">The text to search for phone numbers, null for no text.</param>
+            <param name="defaultRegion">Region that we are expecting the number to be from. This is only used
+            if the number being parsed is not written in international format. The
+            country_code for the number in this case would be stored as that of
+            the default region supplied. May be null if only international
+            numbers are expected.</param>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.FindNumbers(System.String,System.String,PhoneNumbers.PhoneNumberUtil.Leniency,System.Int64)">
+            <summary>
+            Returns an iterable over all <see cref="T:PhoneNumbers.PhoneNumberMatch"/> PhoneNumberMatches in text.
+            </summary>
+            <param name="text">The text to search for phone numbers, null for no text.</param>
+            <param name="defaultRegion">Tegion that we are expecting the number to be from. This is only used
+            if the number being parsed is not written in international format. The
+            country_code for the number in this case would be stored as that of
+            the default region supplied. May be null if only international
+            numbers are expected.</param>
+            <param name="leniency">The leniency to use when evaluating candidate phone numbers.</param>
+            <param name="maxTries">The maximum number of invalid numbers to try before giving up on the
+            text. This is to cover degenerate cases where the text has a lot of
+            false positives in it. Must be {@code >= 0}.</param>
+            <returns></returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.SetItalianLeadingZerosForPhoneNumber(System.String,PhoneNumbers.PhoneNumber.Builder)">
+            <summary>
+            A helper function to set the values related to leading zeros in a PhoneNumber.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.ParseHelper(System.String,System.String,System.Boolean,System.Boolean,PhoneNumbers.PhoneNumber.Builder)">
+            <summary>
+            Parses a string and fills up the phoneNumber. This method is the same as the public
+            Parse() method, with the exception that it allows the default region to be null, for use by
+            IsNumberMatch(). checkRegion should be set to false if it is permitted for the default region
+            to be null or unknown ("ZZ").
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.BuildNationalNumberForParsing(System.String,System.Text.StringBuilder)">
+            <summary>
+            Converts numberToParse to a form that we can parse and write it to nationalNumber if it is
+            written in RFC3966; otherwise extract a possible number out of it and write to nationalNumber.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsNumberMatch(PhoneNumbers.PhoneNumber,PhoneNumbers.PhoneNumber)">
+             <summary>
+             Takes two phone numbers and compares them for equality.
+             <para>
+             Returns EXACT_MATCH if the country_code, NSN, presence of a leading zero for Italian numbers
+             and any extension present are the same.
+             Returns NSN_MATCH if either or both has no region specified, and the NSNs and extensions are
+             the same.</para>
+             <para>Returns SHORT_NSN_MATCH if either or both has no region specified, or the region specified is
+             the same, and one NSN could be a shorter version of the other number. This includes the case
+             where one has an extension specified, and the other does not.</para>
+             <para>Returns NO_MATCH otherwise.
+             For example, the numbers +1 345 657 1234 and 657 1234 are a SHORT_NSN_MATCH.
+             The numbers +1 345 657 1234 and 345 657 are a NO_MATCH.</para>
+             </summary>
+             <param name="firstNumberIn">First number to compare.</param>
+             <param name="secondNumberIn">Second number to compare.</param>
+            
+             <returns>NO_MATCH, SHORT_NSN_MATCH, NSN_MATCH or EXACT_MATCH depending on the level of equality
+             of the two numbers, described in the method definition.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsNumberMatch(System.String,System.String)">
+            <summary>
+            Takes two phone numbers as strings and compares them for equality. This is a convenience
+            wrapper for <see cref="M:PhoneNumbers.PhoneNumberUtil.IsNumberMatch(PhoneNumbers.PhoneNumber,PhoneNumbers.PhoneNumber)"/>. No default region is known.
+            </summary>
+            <param name="firstNumber">First number to compare. Can contain formatting, and can have country
+            calling code specified with + at the start.</param>
+            <param name="secondNumber">Second number to compare. Can contain formatting, and can have country
+            calling code specified with + at the start.</param>
+            <returns>NOT_A_NUMBER, NO_MATCH, SHORT_NSN_MATCH, NSN_MATCH, EXACT_MATCH. See
+            <see cref="M:PhoneNumbers.PhoneNumberUtil.IsNumberMatch(PhoneNumbers.PhoneNumber,PhoneNumbers.PhoneNumber)"/> for more details.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.IsNumberMatch(PhoneNumbers.PhoneNumber,System.String)">
+            <summary>
+            Takes two phone numbers and compares them for equality. This is a convenience wrapper for
+            <see cref="M:PhoneNumbers.PhoneNumberUtil.IsNumberMatch(PhoneNumbers.PhoneNumber,PhoneNumbers.PhoneNumber)"/>. No default region is known.
+            </summary>
+            <param name="firstNumber">First number to compare in proto buffer format.</param>
+            <param name="secondNumber">Second number to compare. Can contain formatting, and can have country
+            calling code specified with + at the start.</param>
+            <returns>NOT_A_NUMBER, NO_MATCH, SHORT_NSN_MATCH, NSN_MATCH, EXACT_MATCH. See
+            <see cref="M:PhoneNumbers.PhoneNumberUtil.IsNumberMatch(PhoneNumbers.PhoneNumber,PhoneNumbers.PhoneNumber)"/> for more details.</returns>
+        </member>
+        <member name="M:PhoneNumbers.PhoneNumberUtil.CanBeInternationallyDialled(PhoneNumbers.PhoneNumber)">
+            <summary>
+            Returns true if the number can be dialled from outside the region, or unknown. If the number
+            can only be dialled from within the region, returns false. Does not check the number is a valid
+            number.
+            TODO: Make this method public when we have enough metadata to make it worthwhile.
+            </summary>
+            <param name="number">the phone-number for which we want to know whether it is only diallable from
+            outside the region</param>
+            <returns></returns>
+        </member>
+        <member name="T:PhoneNumbers.ShortNumberInfo">
+             <summary>
+             Methods for getting information about short phone numbers, such as short codes and emergency
+             numbers. Note that most commercial short numbers are not handled here, but by the
+             <see cref="T:PhoneNumbers.PhoneNumberUtil" />.
+            
+             @author Shaopeng Jia
+             @author David Yonge-Mallo
+             </summary>
+        </member>
+        <member name="T:PhoneNumbers.ShortNumberInfo.ShortNumberCost">
+            <summary>
+            Cost categories of short numbers.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.GetInstance">
+            <summary>
+            Returns the singleton instance of the ShortNumberInfo.
+            </summary>
+        </member>
+        <member name="F:PhoneNumbers.ShortNumberInfo.matcherApi">
+            <summary> IMatcherApi supports the basic matching method for checking if a given national number matches
+            a national number pattern defined in the given <see cref="T:PhoneNumbers.PhoneNumberDesc" />.
+            </summary>
+        </member>
+        <member name="F:PhoneNumbers.ShortNumberInfo.countryCallingCodeToRegionCodeMap">
+            <summary>
+            A mapping from a country calling code to the region codes which denote the region represented
+            by that country calling code. In the case of multiple regions sharing a calling code, such as
+            the NANPA regions, the one indicated with "isMainCountryForCode" in the metadata should be first.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.GetRegionCodesForCountryCode(System.Int32)">
+            <summary>
+            Returns a list with the region codes that match the specific country calling code. For
+            non-geographical country calling codes, the region code 001 is returned. Also, in the case
+            of no region code being found, an empty list is returned.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.RegionDialingFromMatchesNumber(PhoneNumbers.PhoneNumber,System.String)">
+            <summary>
+            Helper method to check that the country calling code of the number matches the region it's
+            being dialed from.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.IsPossibleShortNumberForRegion(PhoneNumbers.PhoneNumber,System.String)">
+             <summary>
+             Check whether a short number is a possible number when dialed from the given region. This
+             provides a more lenient check than <see cref="M:PhoneNumbers.ShortNumberInfo.IsValidShortNumberForRegion(PhoneNumbers.PhoneNumber,System.String)" />.
+             </summary>
+            
+             <param name = "number"> the short number to check </param>
+             <param name = "regionDialingFrom"> the region from which the number is dialed </param>
+             <returns> whether the number is a possible short number </returns>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.IsPossibleShortNumber(PhoneNumbers.PhoneNumber)">
+             <summary>
+             Check whether a short number is a possible number. If a country calling code is shared by
+             multiple regions, this returns true if it's possible in any of them. This provides a more
+             lenient check than <see cref = "M:PhoneNumbers.ShortNumberInfo.IsValidShortNumber(PhoneNumbers.PhoneNumber)" />. See
+             <see cref = "M:PhoneNumbers.ShortNumberInfo.IsPossibleShortNumberForRegion(PhoneNumbers.PhoneNumber,System.String)" /> for details.
+             </summary>
+            
+             <param name = "number"> the short number to check </param>
+             <returns> whether the number is a possible short number </returns>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.IsValidShortNumberForRegion(PhoneNumbers.PhoneNumber,System.String)">
+             <summary>
+             Tests whether a short number matches a valid pattern in a region. Note that this doesn't verify
+             the number is actually in use, which is impossible to tell by just looking at the number itself.
+             </summary>
+            
+             <param name="number">the short number for which we want to test the validity</param>
+             <param name="regionDialingFrom">the region from which the number is dialed</param>
+             <returns> whether the short number matches a valid pattern</returns>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.IsValidShortNumber(PhoneNumbers.PhoneNumber)">
+             <summary>
+             Tests whether a short number matches a valid pattern. If a country calling code is shared by
+             multiple regions, this returns true if it's valid in any of them. Note that this doesn't verify
+             the number is actually in use, which is impossible to tell by just looking at the number
+             itself. See <see cref="M:PhoneNumbers.ShortNumberInfo.IsValidShortNumberForRegion(PhoneNumbers.PhoneNumber,System.String)" /> for details.
+             </summary>
+            
+             <param name="number">the short number for which we want to test the validity</param>
+             <returns> whether the short number matches a valid pattern </returns>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.GetExpectedCostForRegion(PhoneNumbers.PhoneNumber,System.String)">
+             <summary>
+             Gets the expected cost category of a short number when dialed from a region (however, nothing
+             is implied about its validity). If it is important that the number is valid, then its validity
+             must first be checked using <see cref="M:PhoneNumbers.ShortNumberInfo.IsValidShortNumberForRegion(PhoneNumbers.PhoneNumber,System.String)" />. Note that emergency numbers
+             are always considered toll-free. Example usage:
+             <code>
+             // The region for which the number was parsed and the region we subsequently check against
+             // need not be the same. Here we parse the number in the US and check it for Canada.
+             PhoneNumber number = phoneUtil.parse("110", "US");
+             ...
+             string regionCode = "CA";
+             ShortNumberInfo shortInfo = ShortNumberInfo.getInstance();
+             if (shortInfo.isValidShortNumberForRegion(shortNumber, regionCode)) {
+               ShortNumberCost cost = shortInfo.getExpectedCostForRegion(number, regionCode);
+               // Do something with the cost information here.
+             }}</code>
+             </summary>
+            
+             <param name="number">the short number for which we want to know the expected cost category </param>
+             <param name="regionDialingFrom">the region from which the number is dialed</param>
+             <returns> the expected cost category for that region of the short number. Returns UNKNOWN_COST if
+                 the number does not match a cost category. Note that an invalid number may match any cost
+                 category.</returns>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.GetExpectedCost(PhoneNumbers.PhoneNumber)">
+             <summary>
+             Gets the expected cost category of a short number (however, nothing is implied about its
+             validity). If the country calling code is unique to a region, this method behaves exactly the
+             same as <see cref="M:PhoneNumbers.ShortNumberInfo.GetExpectedCostForRegion(PhoneNumbers.PhoneNumber,System.String)" />. However, if the country
+             calling code is shared by multiple regions, then it returns the highest cost in the sequence
+             PREMIUM_RATE, UNKNOWN_COST, STANDARD_RATE, TOLL_FREE. The reason for the position of
+             UNKNOWN_COST in this order is that if a number is UNKNOWN_COST in one region but STANDARD_RATE
+             or TOLL_FREE in another, its expected cost cannot be estimated as one of the latter since it
+             might be a PREMIUM_RATE number.
+             <p />
+             For example, if a number is STANDARD_RATE in the US, but TOLL_FREE in Canada, the expected
+             cost returned by this method will be STANDARD_RATE, since the NANPA countries share the same
+             country calling code.
+             <p />
+             Note: If the region from which the number is dialed is known, it is highly preferable to call
+             <see cref ="M:PhoneNumbers.ShortNumberInfo.GetExpectedCostForRegion(PhoneNumbers.PhoneNumber,System.String)" /> instead.
+             </summary>
+            
+             <param name="number">the short number for which we want to know the expected cost category</param>
+             <returns> the highest expected cost category of the short number in the region(s) with the given
+                 country calling code</returns>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.GetRegionCodeForShortNumberFromRegionList(PhoneNumbers.PhoneNumber,System.Collections.Generic.List{System.String})">
+            <summary> Helper method to get the region code for a given phone number, from a list of possible region
+            codes. If the list Contains more than one region, the first region for which the number is
+            valid is returned.
+            </summary>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.GetExampleShortNumber(System.String)">
+            <summary>
+            Gets a valid short number for the specified region.
+            </summary>
+            <param name="regionCode">the region for which an example short number is needed</param>
+            <returns> a valid short number for the specified region. Returns an empty string when the
+                metadata does not contain such information.</returns>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.GetExampleShortNumberForCost(System.String,PhoneNumbers.ShortNumberInfo.ShortNumberCost)">
+             <summary>
+             Gets a valid short number for the specified cost category.
+             </summary>
+            
+             <param name="regionCode">the region for which an example short number is needed</param>
+             <param name="cost">the cost category of number that is needed</param>
+             <returns> a valid short number for the specified region and cost category. Returns an empty
+                 string when the metadata does not contain such information, or the cost is UNKNOWN_COST.</returns>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.ConnectsToEmergencyNumber(System.String,System.String)">
+             <summary>
+             Returns true if the given number, exactly as dialed, might be used to connect to an emergency
+             service in the given region.
+             <p />
+             This method accepts a string, rather than a PhoneNumber, because it needs to distinguish
+             cases such as "+1 911" and "911", where the former may not connect to an emergency service in
+             all cases but the latter would. This method takes into account cases where the number might
+             contain formatting, or might have additional digits appended (when it is okay to do that in
+             the specified region).
+             </summary>
+            
+             <param name="number">the phone number to test</param>
+             <param name="regionCode">the region where the phone number is being dialed</param>
+             <returns> whether the number might be used to connect to an emergency service in the given region</returns>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.IsEmergencyNumber(System.String,System.String)">
+             <summary>
+             Returns true if the given number exactly matches an emergency service number in the given
+             region.
+             <p />
+             This method takes into account cases where the number might contain formatting, but doesn't
+             allow additional digits to be appended. Note that <see cref="M:PhoneNumbers.ShortNumberInfo.IsEmergencyNumber(System.String,System.String)" />
+             implies <see cref="M:PhoneNumbers.ShortNumberInfo.ConnectsToEmergencyNumber(System.String,System.String)" />.
+             </summary>
+            
+             <param name="number">the phone number to test</param>
+             <param name="regionCode">the region where the phone number is being dialed</param>
+             <returns> whether the number exactly matches an emergency services number in the given region</returns>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.IsCarrierSpecific(PhoneNumbers.PhoneNumber)">
+             <summary>
+             Given a valid short number, determines whether it is carrier-specific (however, nothing is
+             implied about its validity). Carrier-specific numbers may connect to a different end-point, or
+             not connect at all, depending on the user's carrier. If it is important that the number is
+             valid, then its validity must first be checked using <see cref="M:PhoneNumbers.ShortNumberInfo.IsValidShortNumber(PhoneNumbers.PhoneNumber)" /> or
+             <see cerf="IsValidShortNumberForRegion" />.
+             </summary>
+            
+             <param name="number"> the valid short number to check</param>
+             <returns> whether the short number is carrier-specific, assuming the input was a valid short
+                 number</returns>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.IsCarrierSpecificForRegion(PhoneNumbers.PhoneNumber,System.String)">
+             <summary>
+             Given a valid short number, determines whether it is carrier-specific when dialed from the
+             given region (however, nothing is implied about its validity). Carrier-specific numbers may
+             connect to a different end-point, or not connect at all, depending on the user's carrier. If
+             it is important that the number is valid, then its validity must first be checked using
+             <see cref="M:PhoneNumbers.ShortNumberInfo.IsValidShortNumber(PhoneNumbers.PhoneNumber)" /> or <see cref="M:PhoneNumbers.ShortNumberInfo.IsValidShortNumberForRegion(PhoneNumbers.PhoneNumber,System.String)" />.
+             Returns false if the number doesn't match the region provided.
+             </summary>
+            
+             <param name="number"> the valid short number to check</param>
+             <param name="regionDialingFrom"> the region from which the number is dialed</param>
+             <returns>whether the short number is carrier-specific in the provided region, assuming the
+                 input was a valid short number</returns>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.IsSmsServiceForRegion(PhoneNumbers.PhoneNumber,System.String)">
+             <summary>
+             Given a valid short number, determines whether it is an SMS service (however, nothing is
+             implied about its validity). An SMS service is where the primary or only intended usage is to
+             receive and/or send text messages (SMSs). This includes MMS as MMS numbers downgrade to SMS if
+             the other party isn't MMS-capable. If it is important that the number is valid, then its
+             validity must first be checked using <see cref="M:PhoneNumbers.ShortNumberInfo.IsValidShortNumber(PhoneNumbers.PhoneNumber)" /> or
+             <see cref="M:PhoneNumbers.ShortNumberInfo.IsValidShortNumberForRegion(PhoneNumbers.PhoneNumber,System.String)" />. Returns false if the number doesn't match the region provided.
+             </summary>
+            
+             <param name="number"> the valid short number to check</param>
+             <param name="regionDialingFrom"> the region from which the number is dialed</param>
+             <returns>  whether the short number is an SMS service in the provided region, assuming the input
+                 was a valid short number</returns>
+        </member>
+        <member name="M:PhoneNumbers.ShortNumberInfo.GetNationalSignificantNumber(PhoneNumbers.PhoneNumber)">
+             <summary>
+             Gets the national significant number of the a phone number. Note a national significant number
+             doesn't contain a national prefix or any formatting.
+             <p />
+             This is a temporary duplicate of the <see cref="M:PhoneNumbers.ShortNumberInfo.GetNationalSignificantNumber(PhoneNumbers.PhoneNumber)" /> method from
+             <see cref="T:PhoneNumbers.PhoneNumberUtil" />. Ultimately a canonical static version should exist in a separate
+             </summary>
+            
+             <param name="number"> the phone number for which the national significant number is needed</param>
+             utility class (to prevent <see cref="T:PhoneNumbers.ShortNumberInfo" /> needing to depend on PhoneNumberUtil).
+             <returns> the national significant number of the PhoneNumber object passed in </returns>
+        </member>
+    </members>
+</doc>
