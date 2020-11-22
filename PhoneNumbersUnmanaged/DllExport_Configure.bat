@@ -1,1 +1,1 @@
-DllExport -action Configure %*
+DllExport -packages="%cd%\packages" -sln-dir="%cd%" -action Configure %*
