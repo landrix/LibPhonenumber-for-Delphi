@@ -64,17 +64,17 @@
     <DllExportPostProcType>0</DllExportPostProcType>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="PhoneNumbers, Version=8.12.13.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\libphonenumber-csharp.8.12.13\lib\net40\PhoneNumbers.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="PhoneNumbersWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="PhoneNumbers, Version=8.12.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\libphonenumber-csharp.8.12.14\lib\net40\PhoneNumbers.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ImportGroup Label=".NET DllExport">
