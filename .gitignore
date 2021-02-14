@@ -1,3 +1,7 @@
 .vs
 PhoneNumbersUnmanaged/obj
-PhoneNumbersUnmanaged/packages/libphonenumber-csharp.8.12.17
+PhoneNumbersUnmanaged/packages/libphonenumber-csharp.8.12.18
+Win32/*.xml
+Win32/*.config
+Win64/*.xml
+Win64/*.config
