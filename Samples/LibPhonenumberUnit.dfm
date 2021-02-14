@@ -1,7 +1,7 @@
 object Form5: TForm5
   Left = 0
   Top = 0
-  Caption = 'LibPhonenumber v8.12.17'
+  Caption = 'LibPhonenumber v8.12.18'
   ClientHeight = 90
   ClientWidth = 472
   Color = clBtnFace
