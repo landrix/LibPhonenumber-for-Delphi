@@ -72,8 +72,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="PhoneNumbers, Version=8.12.28.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\libphonenumber-csharp.8.12.28\lib\net40\PhoneNumbers.dll</HintPath>
+    <Reference Include="PhoneNumbers, Version=8.12.30.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\libphonenumber-csharp.8.12.30\lib\net40\PhoneNumbers.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
