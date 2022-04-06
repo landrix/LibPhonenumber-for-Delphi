@@ -9,15 +9,18 @@ type
   TLibPhoneNumber = class
   private type
     TParseFunction = function (phonenumber : WideString; country : WideString; out formatetNumber : WideString) : Boolean; stdcall;
+    TIsValidNumberFunction = function (phonenumber : WideString; country : WideString) : Boolean; stdcall;
   private
     dll : HMODULE;
     parseFunction : TParseFunction;
+    isValidNumberFunction : TIsValidNumberFunction;
   private const
     DLLNAME = 'PhoneNumbersUnmanaged.dll';
   public
     constructor Create;
     destructor Destroy; override;
     class function Parse(const phonenumber, country : String; E164notation : Boolean = true) : String;
+    class function IsValidNumber(const phonenumber, country : String) : Boolean;
   end;
 
 implementation
@@ -39,7 +42,8 @@ begin
   dll := LoadLibrary(PChar(ExtractFilePath(ParamStr(0))+DLLNAME));
   if dll <> 0 then
   begin
-    parseFunction := GetProcAddress(dll, 'Parse');
+    parseFunction := GetProcAddress(dll, 'parse');
+    isValidNumberFunction := GetProcAddress(dll, 'isValidNumber');
   end else
     MessageDlg(Format('error loading "%s".',[DLLNAME])+#10+ExtractFilePath(ParamStr(0)), mtError, [mbOK], 0);
 end;
@@ -50,6 +54,17 @@ begin
     FreeLibrary(dll);
   dll := 0;
   inherited;
+end;
+
+class function TLibPhoneNumber.IsValidNumber(const phonenumber,
+  country: String): Boolean;
+begin
+  Result := false;
+  if instance = nil then
+    instance := TLibPhoneNumber.Create;
+  if not Assigned(instance.isValidNumberFunction) then
+    exit;
+  Result := instance.isValidNumberFunction(phoneNumber,country);
 end;
 
 class function TLibPhoneNumber.Parse(const phonenumber,
