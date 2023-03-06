@@ -2,13 +2,13 @@ program LibPhonenumber;
 
 uses
   Vcl.Forms,
-  LibPhonenumberUnit in 'LibPhonenumberUnit.pas' {Form5};
+  LibPhonenumberUnit in 'LibPhonenumberUnit.pas' {LibPhonenumberForm};
 
 {$R *.res}
 
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TForm5, Form5);
+  Application.CreateForm(TLibPhonenumberForm, LibPhonenumberForm);
   Application.Run;
 end.
