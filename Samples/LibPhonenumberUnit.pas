@@ -8,7 +8,7 @@ uses
   ,PhoneNumbers;
 
 type
-  TForm5 = class(TForm)
+  TLibPhonenumberForm = class(TForm)
     Edit1: TEdit;
     Label1: TLabel;
     Edit2: TEdit;
@@ -23,23 +23,23 @@ type
     Label7: TLabel;
     Label8: TLabel;
     Label9: TLabel;
-    procedure Edit1Change(Sender: TObject);
     procedure Edit4Change(Sender: TObject);
+    procedure Edit1Change(Sender: TObject);
   end;
 
 var
-  Form5: TForm5;
+  LibPhonenumberForm: TLibPhonenumberForm;
 
 implementation
 
 {$R *.dfm}
 
-procedure TForm5.Edit1Change(Sender: TObject);
+procedure TLibPhonenumberForm.Edit1Change(Sender: TObject);
 begin
-  Edit3.Text := TLibPhoneNumber.Parse(Edit1.Text,Edit2.Text,false);                                                                                                                                                         01
+  Edit3.Text := TLibPhoneNumber.Parse(Edit1.Text,Edit2.Text,false);
 end;
 
-procedure TForm5.Edit4Change(Sender: TObject);
+procedure TLibPhonenumberForm.Edit4Change(Sender: TObject);
 begin
   if TLibPhoneNumber.IsValidNumber(Edit4.Text,Edit5.Text) then
     Label9.Caption := 'yes'
