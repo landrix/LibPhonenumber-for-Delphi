@@ -23,7 +23,14 @@ type
     class function IsValidNumber(const phonenumber, country : String) : Boolean;
   end;
 
+
+var
+  PhoneNumbersDllOverrideDir: String = '';
+
 implementation
+
+uses
+  system.ioUtils;
 
 var
   instance : TLibPhoneNumber;
@@ -31,15 +38,22 @@ var
 { TLibPhoneNumber }
 
 constructor TLibPhoneNumber.Create;
+var
+  lDllFn, lDllDir: String;
 begin
   dll := 0;
   parseFunction := nil;
-  if not FileExists(ExtractFilePath(ParamStr(0))+DLLNAME) then
+  if PhoneNumbersDllOverrideDir = '' then
+    lDllDir:= ExtractFilePath(ParamStr(0))
+  else
+    lDllDir:= PhoneNumbersDllOverrideDir;
+  lDllFn:= TPath.Combine(lDllDir,  DLLNAME);
+  if not FileExists(lDllFn) then
   begin
     MessageDlg(Format('"%s" not found.',[DLLNAME])+#10+ExtractFilePath(ParamStr(0)), mtError, [mbOK], 0);
     exit;
   end;
-  dll := LoadLibrary(PChar(ExtractFilePath(ParamStr(0))+DLLNAME));
+  dll := LoadLibrary(PChar(lDllFn));
   if dll <> 0 then
   begin
     parseFunction := GetProcAddress(dll, 'parse');
