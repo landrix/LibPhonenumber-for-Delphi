@@ -8,8 +8,8 @@ uses System.Classes,System.SysUtils,System.StrUtils
 type
   TLibPhoneNumber = class
   private type
-    TParseFunction = function (phonenumber : WideString; country : WideString; out formatetNumber : WideString) : Boolean; stdcall;
-    TIsValidNumberFunction = function (phonenumber : WideString; country : WideString) : Boolean; stdcall;
+    TParseFunction = function (phonenumber : WideString; country : WideString; out formatetNumber : WideString) : Boolean; cdecl;
+    TIsValidNumberFunction = function (phonenumber : WideString; country : WideString) : Boolean; cdecl;
   private
     dll : HMODULE;
     parseFunction : TParseFunction;
