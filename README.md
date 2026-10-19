@@ -1,4 +1,6 @@
 # LibPhonenumber-for-Delphi
+> **Looking for a pure Pascal version without .NET?** [libphonenumber-pascal](https://github.com/landrix/libphonenumber-pascal) is a native port of libphonenumber for Delphi and FreePascal - no DLL, no .NET runtime. This repository continues to provide the .NET based wrapper.
+
 Delphi-wrapper for the [C# .NET port](https://github.com/twcclegg/libphonenumber-csharp) of Google's [libphonenumber library](https://github.com/googlei18n/libphonenumber). 
 
 Current version is v9.0.41
